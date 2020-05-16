@@ -1,0 +1,1365 @@
+include('../javascript/propertyware/constants.js');
+
+function include(file) {
+    var script  = document.createElement('script');
+    script.src  = file;
+    script.type = 'text/javascript';
+    script.defer = true;
+
+    document.getElementsByTagName('head').item(0).appendChild(script);
+}
+function updateField(field)  {
+    var fieldName = field.name;
+    debug("Function updateField(): " + fieldName);
+    jQuery(fieldName).removeClass("error");
+    var lookupValue = "";
+    var fieldKey;
+    if (fieldName.indexOf("lookup_") >= 0 ) {
+        fieldKey = fieldName.split("lookup_")[1];
+        lookupValue =  document.forms[formName].elements[fieldName].value;
+    } else {
+        fieldKey = fieldName;
+    }
+    if (document.forms[formName].elements[fieldKey].type == 'checkbox') {
+        var updateValue = document.forms[formName].elements[fieldKey].checked;
+    } else {
+        var updateValue =  document.forms[formName].elements[fieldKey].value;
+    }
+    jQuery.get(formPath, {
+        action:'UF',
+        k:fieldKey,
+        l:fieldName,
+        v:updateValue,
+        lv:lookupValue
+    });
+}
+
+function fieldSaved(fieldKey, fieldLabel, fieldValueFormatted) {
+    jQuery('#gridMessageBoard').addClass("error");
+    jQuery('#gridMessageBoard').html(fieldLabel + ' saved');
+    document.forms[formName].elements[fieldKey].value = fieldValueFormatted;
+    document.forms[formName].elements[fieldKey].title = fieldValueFormatted;
+
+    executeLocalFunction( fieldKey, fieldLabel, fieldValueFormatted );
+}
+
+function fieldError(fieldKey, errorMsg) {
+    debug(fieldKey + ", "+errorMsg);
+    jQuery(fieldKey).addClass("error");
+    jQuery("#gridMessageBoard").html(errorMsg);
+    jQuery("#gridMessageBoard").addClass("error");
+}
+
+/**
+ * Update title,value for the given Element and update the Element id/name with the new primary key.
+ * The id/name is changed so next time this same element is updated an update is called instead of an insert.
+ *
+ * @param fieldKey The id of the modified Element (with the -1 or null string. ex: com.realpage.propertyware.model.shard.finance.GLAccount[26804227].budgets[null].budget
+ * @param pk The primary key for the object that has just been stored. ex: 42343234   ( budgets[null] --> 42343234 )
+ * @param fieldLabel The field Label
+ * @param fieldValueFormatted The value formatted
+ */
+function newFieldSaved( fieldKey, pk, fieldLabel, fieldValueFormatted, cell ){
+    var newFieldKey = fieldKey;
+    if( pk !== "" ){
+        newFieldKey = fieldKey.replace("[null]","["+pk+"]");
+        // Show message "value saved" to the user
+        jQuery('#gridMessageBoard').addClass("error");
+        jQuery('#gridMessageBoard').html(fieldLabel + ' saved');
+    }
+
+    // Update element value, title and key.
+    document.getElementById(cell).childNodes[0].value = fieldValueFormatted;
+    document.getElementById(cell).childNodes[0].title = fieldValueFormatted;
+    document.getElementById(cell).childNodes[0].id = newFieldKey;
+    document.getElementById(cell).childNodes[0].name = newFieldKey;
+
+    // Execute a local function. ex: in banking-budgeting grid edit executes the sum of budgets for the same gl account.
+    executeLocalFunction( newFieldKey, fieldLabel, fieldValueFormatted );
+}
+
+/**
+ *
+ * This is an empty function: This function should be overwritten in
+ * each module if you like a particular implementation.
+ *
+ * @param fieldKey The id of the modified Element.
+ * @param fieldLabel The field Label
+ * @param fieldValueFormatted The value formatted
+ */
+function executeLocalFunction( fieldKey, fieldLabel, fieldValueFormatted ){
+    // overwrite this function for local behaviour.
+}
+
+function rollbackField(fieldKey) {
+    document.forms[formName].elements[fieldKey].value = document.forms[formName].elements[fieldKey].title;
+}
+
+var inputLocationField;
+var inputLocationForm;
+var inputLocationTimeout;
+var inputLocationSearchTimeout;
+
+function lookupPublishedPropertiesLocation(locationField, fn) {
+    inputLocationField = locationField;
+    inputLocationField.onblur = lookupLocationHideTimeout;
+    inputLocationForm = fn;
+
+    var oLookupLocationContainer = document.getElementById('lookupLocationContainer');
+
+    if (oLookupLocationContainer == null) {
+
+        oLookupLocationContainer = document.createElement('div');
+        oLookupLocationContainer.setAttribute('id', 'lookupLocationContainer');
+        oLookupLocationContainer.onfocus = lookupLocationClearTimeout;
+        oLookupLocationContainer.onblur = lookupLocationHideTimeout;
+        document.getElementById('content').appendChild(oLookupLocationContainer);
+    }
+    oLookupLocationContainer.style.top = ylib_getPageY(inputLocationField)+20;
+    oLookupLocationContainer.style.left = ylib_getPageX(inputLocationField);
+    oLookupLocationContainer.style.width = ylib_getW(inputLocationField);
+
+    // remove previous timeout callback
+    if (inputLocationSearchTimeout != null) {
+        window.clearTimeout(inputLocationSearchTimeout);
+    }
+    inputLocationSearchTimeout = window.setTimeout('lookupPublishedPropertiesLocationSearch()', 500);
+}
+
+function lookupPublishedPropertiesLocationSearch() {
+    var oLookupLocationContainer = document.getElementById('lookupLocationContainer');
+    if (inputLocationField.value != '') {
+        oLookupLocationContainer.innerHTML = "<div class='lookupMsg' style='text-align:center'><img alt='Please Wait' align='absmiddle' src='../images/waiting6.gif' /> Loading<div/>";
+        oLookupLocationContainer.style.display = "block";
+        document.forms[inputLocationForm].searchText.value = inputLocationField.value;
+        document.forms[inputLocationForm].action.value = 'LookupPublishedPropertiesLocation';
+        ajaxAction.setAsync(false).send(inputLocationForm+'.searchText');
+    } else {
+        oLookupLocationContainer.innerHTML =
+        "<div class=\"lookupMsg\">" +
+        "    <b>Search by:</b>" +
+        "    <ul>" +
+        "        <li>Name </li>" +
+        "        <li>Abbreviation </li>" +
+        "        <li>Address </li>" +
+        "        <li>Unit Type</li>" +
+        "    </ul>" +
+        "    <b>Tips:</b>" +
+        "    <ul>" +
+        "        <li>Use * to view entire list</li>" +
+        "        <li>Use complete search terms (i.e. meadows)</li>" +
+        "        <li>or use the wildcard letter '*' (i.e. willow 2*)</li>" +
+        "    </ul>" +
+        "</div>";
+        oLookupLocationContainer.style.display = "block";
+    }
+}
+
+function updateOrgID(id){
+    jQuery('#flyerLocationOrgID').val(id);
+}
+
+function lls(l) { lookupLocationSet(l) } // short hand for  lookupLocationSet(location)
+
+function lookupLocationSet(location) {
+    lookupLocationClearTimeout();
+    inputLocationField.value = location;
+    lookupLocationHide();
+    inputLocationField.focus();
+}
+
+function lookupLocationClearTimeout() {
+    window.clearTimeout(inputLocationTimeout);
+}
+
+function lookupLocationHideTimeout() {
+    inputLocationTimeout=window.setTimeout('lookupLocationHide()', 750);
+}
+
+function lookupLocationHide() {
+    var oDiv = document.getElementById('lookupLocationContainer');
+    if (oDiv != null){
+        oDiv.style.display = "none";
+    }
+}
+
+var KEY = {
+    UP: 38,
+    DOWN: 40,
+    DEL: 46,
+    TAB: 9,
+    RETURN: 13,
+    ESC: 27,
+    COMMA: 188,
+    PAGEUP: 33,
+    PAGEDOWN: 34,
+    BACKSPACE: 8
+};
+
+
+
+function getKeycode(e) {
+    var keycode;
+    if (window.event)  {
+        keycode = window.event.keyCode;
+    } else if (e) {
+        keycode = e.which;
+    }
+    return keycode;
+}
+
+
+function handleSpecialKeys(e, inputField) {
+    debug("Function handleSpecialKeys()");
+    var keycode = getKeycode(e);
+    if (keycode == KEY.RETURN) { // enter key
+        debug("<Enter>");
+        e.preventDefault();
+        var cellID = inputField.parentNode.id;
+        //alert(cellID);
+        var rowNum = new Number(cellID.split("_")[1]);
+        var colNum = cellID.split("_")[2];
+        //alert("cell_"+(rowNum)+"_"+colNum);
+
+        if (e.shiftKey == 1) {
+            rowNum--;
+        } else {
+            rowNum++;
+        }
+
+        var nextCell = document.getElementById("cell_"+(rowNum)+"_"+colNum);
+        if (nextCell != null) {
+            debug("nextCell != null");
+            for (var i=0; i<nextCell.childNodes.length; i++) {
+                if ((nextCell.childNodes[i].nodeName=="INPUT" && nextCell.childNodes[i].type != "hidden") || nextCell.childNodes[i].nodeName=="SELECT") {
+                    //alert(nextCell.id);
+                    nextCell.childNodes[i].focus();
+                    nextCell.childNodes[i].select();
+                }
+            }
+        }
+    }
+}
+
+function goPage(pageNumber) {
+    var propertyID = "";
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        propertyID = document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&o=' + document.forms[formName].elements['o'].value +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + pageNumber +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&gridPropertyFilterOn=' + propertyID;
+}
+
+function changeView() {
+    var propertyID = "";
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        propertyID = document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + 1 +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&gridPropertyFilterOn=' + propertyID;
+}
+
+function display(pageSize) {
+    var propertyID = "";
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        propertyID = document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&o=' + document.forms[formName].elements['o'].value +
+                             '&ps=' + pageSize +
+                             '&pg=' + 1 +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&gridPropertyFilterOn=' + propertyID +
+                             '&tabIndex=' + document.forms[formName].tabIndex.value;
+}
+
+
+
+var selectedColumn;
+var selectedColumnIndex = 0;
+function showColumnOptions(e, headerElem) {
+    debug("Function showColumnOptions() : " + e);
+    var oColumnOptionsDiv = document.getElementById('columnOptionsDiv');
+    oColumnOptionsDiv.style.display = 'block';
+    oColumnOptionsDiv.style.top = jQuery(headerElem).position().top + 25 + jQuery("#contentWrapper").scrollTop() + "px";//contentWraper issue with trial banners
+
+    oColumnOptionsDiv.style.width = jQuery(oColumnOptionsDiv).find('ul').width() + "px";
+
+    //Sets to the right of the header element if the popup falls outside of the parent container
+    if( (jQuery(headerElem).position().left + jQuery(oColumnOptionsDiv).find('ul').width()) > (jQuery("#gridDiv").position().left + jQuery("#gridDiv").width()) ) {
+        oColumnOptionsDiv.style.left = (jQuery(headerElem).position().left - (jQuery(oColumnOptionsDiv).find('ul').width() - jQuery(headerElem).width() )) + "px";
+    } else {
+        oColumnOptionsDiv.style.left = jQuery(headerElem).position().left + "px";
+    }
+
+    jQuery("#columnOptionsDiv li").hover(function() {
+        jQuery(this).css({'background-color': '#ffd761', 'cursor': 'pointer'});
+    }, function() {
+        jQuery(this).css({ 'background-color': 'white'});
+    });
+
+    selectedColumn = headerElem;
+
+    if (selectedColumn != null) {
+        selectedColumnIndex = new Number(selectedColumn.id.split("_")[1]) -1;
+    }
+    debug("selectedColumnIndex="+selectedColumnIndex);
+
+}
+
+function hideColumnOptions() {
+    jQuery("#columnOptionsDiv").hide();
+}
+
+function hideColumnOptionsTimer(e, headerElem) {
+    debug("Function hideColumnOptionsTimer() : " + e + headerElem);
+}
+
+function sortAsc() {
+    hideColumnOptions();
+    var propertyID = "";
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        propertyID = document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + document.forms[formName].elements['pg'].value +
+                             '&o=' + new Number(selectedColumn.id.split("_")[1]) +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&gridPropertyFilterOn=' + propertyID;
+}
+
+function sortDesc() {
+    hideColumnOptions();
+    var propertyID = "";
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        propertyID = document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + document.forms[formName].elements['pg'].value +
+                             '&o=' + (-1*new Number(selectedColumn.id.split("_")[1])) +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&gridPropertyFilterOn=' + propertyID;
+}
+
+function editFilters() {
+    hideColumnOptions();
+    document.forms[formName].elements['itemIndex'].value = selectedColumnIndex;
+    jQuery.get(formPath, {
+        action:'EditFilters',
+        v:document.forms[formName].elements['itemIndex'].value,
+        viewID: document.forms[formName].elements['viewID'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function editColumns() {
+    hideColumnOptions();
+    document.forms[formName].elements['itemIndex'].value = selectedColumnIndex;
+    jQuery.get(formPath, {
+        action:'EditColumns',
+        itemIndex:document.forms[formName].elements['itemIndex'].value,
+        viewID: document.forms[formName].elements['viewID'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function addFilter() {
+    if (document.forms[formName].elements['gridFilterColumn'].value == '' ||
+        document.forms[formName].elements['gridFilterOperator'] == null ||
+        document.forms[formName].elements['gridFilterOperator'].value == '') {
+        jQuery("#gridEditFiltersMessage").addClass("errorBox");
+        jQuery("#gridEditFiltersMessage").html(getErrorMsgHTML('You must select a column and a condition'));
+
+    } else {
+        jQuery.post(formPath, {
+            action:'AddFilter',
+            viewID: document.forms[formName].elements['viewID'].value,
+            itemIndex:document.forms[formName].elements['gridFilterColumn'].value,
+            gridFilterOperator:document.forms[formName].elements['gridFilterOperator'].value,
+            gridFilterFunction:document.forms[formName].elements['gridFilterFunction']== null?"":document.forms[formName].elements['gridFilterFunction'].value,
+            gridFilterValue1:document.forms[formName].elements['gridFilterValue1']==null?"":document.forms[formName].elements['gridFilterValue1'].value,
+            gridFilterValue2:document.forms[formName].elements['gridFilterValue2']==null?"":document.forms[formName].elements['gridFilterValue2'].value,
+            gridEdit:document.forms[formName].elements['gridEdit'].value
+        });
+    }
+}
+
+function removeFilter(index) {
+    document.forms[formName].elements['itemIndex'].value = index;
+    jQuery.post(formPath, {
+        action:'RemoveFilter',
+        viewID: document.forms[formName].elements['viewID'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value,
+        itemIndex:document.forms[formName].elements['itemIndex'].value
+    });
+}
+
+function filterColumnChanged() {
+    debug(document.forms[formName].elements['gridFilterColumn'].value);
+    jQuery.post(formPath, {
+        action:'FilterColumnChanged',
+        itemIndex:document.forms[formName].elements['gridFilterColumn'].value,
+        viewID: document.forms[formName].elements['viewID'].value,
+        gridFilterOperator:document.forms[formName].elements['gridFilterOperator']== null?"":document.forms[formName].elements['gridFilterOperator'].value,
+        gridFilterFunction:document.forms[formName].elements['gridFilterFunction']== null?"":document.forms[formName].elements['gridFilterFunction'].value,
+        gridFilterValue1:document.forms[formName].elements['gridFilterValue1']==null?"":document.forms[formName].elements['gridFilterValue1'].value,
+        gridFilterValue2:document.forms[formName].elements['gridFilterValue2']==null?"":document.forms[formName].elements['gridFilterValue2'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function filterColumnValueDateChanged() {
+    if (jQuery('#gridFilterFunction').val() == "custom()") {
+        jQuery("#gridFilterValue1").show();
+    } else {
+        jQuery("#gridFilterValue1").hide();
+    }
+}
+
+function filterOperatorChanged() {
+    jQuery.post(formPath, {
+        action:'FilterOperatorChanged',
+        itemIndex:document.forms[formName].elements['gridFilterColumn'].value,
+        viewID: document.forms[formName].elements['viewID'].value,
+        gridFilterOperator:document.forms[formName].elements['gridFilterOperator']== null?"":document.forms[formName].elements['gridFilterOperator'].value,
+        gridFilterFunction:document.forms[formName].elements['gridFilterFunction']== null?"":document.forms[formName].elements['gridFilterFunction'].value,
+        gridFilterValue1:document.forms[formName].elements['gridFilterValue1']==null?"":document.forms[formName].elements['gridFilterValue1'].value,
+        gridFilterValue2:document.forms[formName].elements['gridFilterValue2']==null?"":document.forms[formName].elements['gridFilterValue2'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function refreshView() {
+    var filterOnParam = '';
+    if(document.forms[formName].elements['showingView.gridPropertyFilterOn']){
+        filterOnParam = '&gridPropertyFilterOn=' + document.forms[formName].elements['showingView.gridPropertyFilterOn'].value;
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=View&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&gridColumns=' + document.forms[formName].elements['gridColumns'].value +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + 1 +
+                             '&o=' + document.forms[formName].elements['o'].value +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             filterOnParam;
+}
+
+
+function saveColumns() {
+    var sourceSelect = document.getElementById('selectedColumns');
+    var len = sourceSelect.length;
+    document.forms[formName].gridColumns.value = '';
+    for (var i=0; i < len; i++) {
+        document.forms[formName].gridColumns.value += sourceSelect.options[i].value;
+        if (i < len){
+            document.forms[formName].gridColumns.value = document.forms[formName].gridColumns.value + ",";
+        }
+    }
+    document.location.href = document.location.href.split('?')[0] +
+                             '?action=SaveColumns&viewID=' + document.forms[formName].elements['viewID'].value +
+                             '&gridColumns=' + encodeURIComponent(document.forms[formName].elements['gridColumns'].value) +
+                             '&ps=' + document.forms[formName].elements['ps'].value +
+                             '&pg=' + document.forms[formName].elements['pg'].value +
+                             '&o=' + document.forms[formName].elements['o'].value +
+                             '&gridEdit=' + document.forms[formName].elements['gridEdit'].value +
+                             '&retUrl=' + document.forms[formName].elements['retUrl'].value;
+}
+
+function massUpdate(columnIndex)  {
+    debug("massUpdate:" + columnIndex);
+    hideColumnOptions();
+    document.forms[formName].elements['itemIndex'].value = selectedColumnIndex;
+    jQuery.get(formPath, {
+        action:'MassUpdate',
+        viewID: document.forms[formName].elements['viewID'].value,
+        itemIndex:document.forms[formName].elements['itemIndex'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function massUpdateColumnChanged()  {
+    document.forms[formName].elements['itemIndex'].value =  document.forms[formName].elements['massUpdateColumnIndex'].value;
+    jQuery.get(formPath, {
+        action:'MassUpdateColumnChanged',
+        viewID: document.forms[formName].elements['viewID'].value,
+        itemIndex:document.forms[formName].elements['massUpdateColumnIndex'].value,
+        gridEdit:document.forms[formName].elements['gridEdit'].value
+    });
+}
+
+function addressMsgPopUp(addressMsgPopUp) {
+    var selectedIndex = document.forms[formName].elements['massUpdateColumnIndex'].selectedIndex;
+    var columnName = document.forms[formName].elements['massUpdateColumnIndex'].options[selectedIndex].text;
+    var val = 0;
+    if(addressMsgPopUp == 'true') {
+        var arr = ['Address', 'Address 2', 'City', 'State / Province', 'Zip / Postal Code', 'Country'];
+        for (var i=0; i<arr.length; i++){
+            if( columnName == arr[i]){
+                val = 1;
+                break;
+            }
+        }
+    }
+    if (val != 0) {
+        var confirmationMessage = "'Editing Address Field(s) in Grid Edit will result in the property address changing to a Not-Validated status.'";
+        var result = window.confirm(confirmationMessage);
+        if (result == true) {
+            confirmMassUpdate();
+        }
+    }else{
+        confirmMassUpdate();
+    }
+}
+
+function confirmMassUpdate(){
+    var confirmationMessage = "You are about to perform a mass update of the";
+    confirmationMessage += jQuery('#massUpdateColumnIndex :selected').text();
+    confirmationMessage += " for all items in this filtered list? This cannot be reversed in case of error. Do you want to proceed?";
+
+    var result = window.confirm(confirmationMessage);
+
+    if (result == true) {
+        submitMassUpdate();
+    }
+}
+
+function submitMassUpdate() {
+    var updateValue = document.forms[formName].elements['massUpdateValue'].value;
+    debug("Mass update ..." + document.forms[formName].elements['massUpdateValue'].type + "," + document.forms[formName].elements['massUpdateValue'].checked);
+    if (document.forms[formName].elements['massUpdateValue'].type == 'checkbox') {
+        updateValue = document.forms[formName].elements['massUpdateValue'].checked;
+    }
+    var selectedIndex = document.forms[formName].elements['massUpdateColumnIndex'].selectedIndex;
+    if(selectedIndex == 0){
+        jQuery("#gridMassUpdateMessage").addClass("errorBox");
+        jQuery("#gridMassUpdateMessage").html(getErrorMsgHTML('Column is required'));
+    } else if(document.forms[formName].elements['columnRequired'].value == 'true' && updateValue == ''){
+        var columnName = document.forms[formName].elements['massUpdateColumnIndex'].options[selectedIndex].text;
+        jQuery("#gridMassUpdateMessage").addClass("errorBox");
+        jQuery("#gridMassUpdateMessage").html(getErrorMsgHTML(columnName + ' New Value is required'));
+    } else {
+        var submitURL = document.location.href.split('?')[0] +
+            '?action=SubmitMassUpdate&viewID=' + document.forms[formName].elements['viewID'].value +
+            '&itemIndex=' + document.forms[formName].elements['massUpdateColumnIndex'].value +
+            '&value=' + escape(updateValue) +
+            '&ps=' + document.forms[formName].elements['ps'].value +
+            '&pg=' + document.forms[formName].elements['pg'].value +
+            '&o=' + document.forms[formName].elements['o'].value +
+            '&gridEdit=' + document.forms[formName].elements['gridEdit'].value;
+        if(document.forms[formName].elements['lookup_massUpdateValue']){
+            submitURL+='&lookupValue=' + document.forms[formName].elements['lookup_massUpdateValue'].value;
+        }
+        debug(submitURL);
+        document.location.href = submitURL;
+    }
+}
+
+function cancelMassUpdate()  {
+    jQuery('#massUpdateDiv').remove();
+}
+
+jQuery.fn.pwLookupWidget = function(options) {
+    /**
+     * Options
+     */
+    settings = jQuery.extend(
+    {
+        url: formPath,
+        lookupAction: "LF"
+    }, options);
+
+    /**
+     * Static variables and functions. These need to be globally static because we update them outside of any instance
+     * using ajax.
+     */
+    jQuery.fn.pwLookupWidget.inputLookupIndex = -1;
+    jQuery.fn.pwLookupWidget.inputLookupOptionCount = 0;
+    jQuery.fn.pwLookupWidget.updateLookupOptionStatuses = function() {
+        debug("Function updateLookupOptionStatuses(): inputLookupIndex="+jQuery.fn.pwLookupWidget.inputLookupIndex);
+        var options = jQuery("#lookupDiv li");
+        options.each(function(i) {
+            this.index = i;
+        });
+        options.mouseover(function(e) {
+            debug("li.mouseover index="+ this.index + "e:" +e);
+            jQuery.fn.pwLookupWidget.inputLookupIndex = this.index;
+        });
+        options.click(function(e) {
+            debug("li.click index="+ this.index);
+            jQuery.fn.pwLookupWidget.inputLookupIndex = this.index;
+            selectOption(e);
+        });
+        options.mouseup(function(e) {
+            debug("li.mouseover index="+ this.index);
+            e.preventDefault();
+            jQuery.fn.pwLookupWidget.inputLookupIndex = this.index;
+        });
+
+        options.mousedown(function(e) {
+            debug("li.mousedown index="+ this.index);
+            e.preventDefault();
+            jQuery.fn.pwLookupWidget.inputLookupIndex = this.index;
+            if(isIE || isChrome) selectOption(e);
+        });
+        jQuery.fn.pwLookupWidget.inputLookupIndex = -1;
+        jQuery.fn.pwLookupWidget.inputLookupOptionCount = options.size();
+    };
+
+
+    var inputLookupField;
+    var inputLookupTimeout;
+    var inputLookupSearchTimeout;
+
+    var lookupField = function(input) {
+        debug("Function lookupField(): " + input.id);
+        inputLookupField = input;
+        var pos = jQuery(inputLookupField).offset();
+        jQuery('#lookupDiv').css({left: pos.left, top: pos.top + 20, width: '250px'});
+        // remove previous timeout callback
+        if (inputLookupSearchTimeout != null) {
+            window.clearTimeout(inputLookupSearchTimeout);
+        }
+        inputLookupSearchTimeout = window.setTimeout(lookupSearch, 500);
+        if (jQuery.fn.pwLookupWidget.inputLookupIndex < 0) {
+            if (inputLookupField.name.indexOf('lookup_') >= 0) {
+                debug(inputLookupField.name.substr(7));
+                document.forms[formName].elements[inputLookupField.name.substr(7)].value = '';
+            }
+        }
+    };
+
+    var lookupSearch = function() {
+        if (inputLookupField.value != '') {
+            jQuery("#lookupDiv").html("<img alt='Please Wait' height='12' align='absmiddle' src='../images/waiting6.gif' /> Loading").show("fast");
+            if (inputLookupField.name.indexOf("lookup_") >= 0 ) {
+                document.forms[formName].elements['k'].value = inputLookupField.name.split("lookup_")[1];
+            } else {
+                document.forms[formName].elements['k'].value = inputLookupField.name;
+            }
+            document.forms[formName].elements['l'].value = inputLookupField.name;
+            document.forms[formName].elements['v'].value = inputLookupField.value;
+//            console.log("lookupSearch: " + document.forms[formName].elements['itemIndex'].value);
+            jQuery.post(settings.url,
+            {
+                action:settings.lookupAction,
+                viewID: document.forms[formName].elements['viewID'].value,
+                itemIndex:document.forms[formName].elements['itemIndex'].value,
+                k:document.forms[formName].elements['k'].value,
+                v:document.forms[formName].elements['v'].value
+            });
+        }
+    };
+
+    /*
+     var lookupClearTimeout = function () {
+     window.clearTimeout(inputLookupTimeout);
+     };
+     */
+
+    var lookupHideTimeout = function() {
+        inputLookupTimeout=window.setTimeout(lookupHide, 750);
+    };
+
+    var lookupHide = function() {
+        debug('lookupHide');
+        jQuery.fn.pwLookupWidget.inputLookupIndex = -1;
+        jQuery.fn.pwLookupWidget.inputLookupOptionCount = 0;
+        jQuery("#lookupDiv").hide();
+    };
+
+    var refreshLookupOptions = function() {
+        debug("Function refreshLookupOptions(): inputLookupIndex="+jQuery.fn.pwLookupWidget.inputLookupIndex);
+        var nodes = document.getElementById('lookupOptions').childNodes;
+        for (var k = 0; k < nodes.length; k++) {
+            if (nodes[k].nodeName=="LI") {
+                if (k == jQuery.fn.pwLookupWidget.inputLookupIndex) {
+                    nodes[k].style.backgroundColor = '316ac5';
+                    nodes[k].style.color = 'white';
+                    if (inputLookupField.name.split("lookup_").length > 1) {
+                        var fieldKey = inputLookupField.name.split("lookup_")[1];
+                        document.forms[formName].elements[fieldKey].value = nodes[k].id;
+                    }
+                } else {
+                    nodes[k].style.backgroundColor = 'white';
+                    nodes[k].style.color = 'black';
+                }
+            }
+        }
+    };
+
+    var selectOption = function(e) {
+        debug("Function selectOption(): inputLookupIndex=" + jQuery.fn.pwLookupWidget.inputLookupIndex +"e:" + e);
+        var nodes = document.getElementById('lookupOptions').childNodes;
+        for (var k = 0; k < nodes.length; k++) {
+            if (nodes[k].nodeName=="LI") {
+                if (k == jQuery.fn.pwLookupWidget.inputLookupIndex) {
+                    inputLookupField.value = nodes[k].textContent!=null?nodes[k].textContent:nodes[k].innerHTML;
+                    if (inputLookupField.name.split("lookup_").length > 1) {
+                        var fieldKey = inputLookupField.name.split("lookup_")[1];
+                        document.forms[formName].elements[fieldKey].value = nodes[k].id;
+                        if(isIE || isChrome) jQuery(inputLookupField).change();
+                    }
+                }
+            }
+        }
+        lookupHide();
+    };
+
+
+    /**
+     * Events
+     */
+    this.keydown(function(e) {
+        debug("Event input.lookup.keydown: ");
+        var keycode = getKeycode(e);
+        if (    keycode == 8 // backspace
+                || (keycode >= 46 && keycode <= 90) // delete, 0-9, a-z
+                || (keycode >= 96 && keycode <= 111) // punctuation
+                || (keycode >= 186) // everything else
+                ) {
+            lookupField(this);
+        } else if (keycode == 38 || keycode == 40) {
+            e.preventDefault();
+            if (jQuery.fn.pwLookupWidget.inputLookupOptionCount > 0) {
+                if (keycode == 38) {
+                    debug("Arrow up");
+                    if (jQuery.fn.pwLookupWidget.inputLookupIndex == 0) {
+                        jQuery.fn.pwLookupWidget.inputLookupIndex = jQuery.fn.pwLookupWidget.inputLookupOptionCount - 1; // wrap around
+                    } else {
+                        jQuery.fn.pwLookupWidget.inputLookupIndex--; // move up
+                    }
+                } else {
+                    debug("Arrow down");
+                    if (jQuery.fn.pwLookupWidget.inputLookupIndex == jQuery.fn.pwLookupWidget.inputLookupOptionCount - 1) {
+                        jQuery.fn.pwLookupWidget.inputLookupIndex = 0; // wrap around
+                    } else {
+                        jQuery.fn.pwLookupWidget.inputLookupIndex++; // move down
+                    }
+                }
+                refreshLookupOptions();
+            }
+        } else if (keycode == 13 && jQuery.fn.pwLookupWidget.inputLookupIndex >= 0) {
+            debug("Event input.lookup.select: "+jQuery.fn.pwLookupWidget.inputLookupIndex);
+            e.preventDefault();
+            selectOption(e);
+        } else {
+            handleSpecialKeys(e, this);
+        }
+    }).blur(function(e) {
+        debug("Event input.lookup.blur: " +e);
+        lookupHideTimeout();
+    });
+    return this;
+
+};
+
+jQuery(document).ready(function(){
+    //GridEdit
+    jQuery("table.gridedit input, table.gridedit select").on('click', function(e) {
+        debug("Event input.click: " +e);
+        jQuery(this).addClass("editing");
+
+        // keep track of current column for lookup -- fix to Bug #015860
+        var parentTDs = jQuery(this).parents("td");
+        if (parentTDs !== null && parentTDs.length > 0) {
+            var parentID = parentTDs[0].id;
+            if (parentID.indexOf("cell_") === 0) {
+                document.forms[formName].elements['itemIndex'].value = parentID.substring(parentID.lastIndexOf("_")+1);
+            }
+        }
+        if(this.className.indexOf("copyToRight") > -1){
+            showArrow(this);
+        }
+        var fieldName = this.name;
+        if (fieldName != null && (fieldName.includes("Building") || fieldName.includes("Unit"))) {
+            if(this.className.indexOf("showValidateMsg") > -1){
+                window.alert('Editing Address Field(s) in Grid Edit will result in the property address changing to a Not-Validated status.');
+            }
+        }
+
+        jQuery(this)[0].focus();
+    }).blur(function(e) {
+        debug("Event input.blur: " +e);
+        jQuery(this).removeClass("editing");
+    }).change(function(e) {
+        debug("Event input.onchange: " +e);
+        updateField(this);
+    }).keydown(function(e) {
+        debug("Event input.keydown: " + e);
+        if ( getKeycode(e) == 13 && jQuery.fn.pwLookupWidget.inputLookupIndex < 0) {
+            handleSpecialKeys(e, this);
+        }
+    });
+
+    jQuery("table.gridedit input, table.gridedit select").keydown(function(e) {
+        if(e.which === 9){
+            debug("Event input.focus: " +e);
+            jQuery(this).addClass("editing");
+
+            // keep track of current column for lookup -- fix to Bug #015860
+            var parentTDs = jQuery(this).parents("td");
+            if (parentTDs !== null && parentTDs.length > 0) {
+                var parentID = parentTDs[0].id;
+                if (parentID.indexOf("cell_") === 0) {
+                    document.forms[formName].elements['itemIndex'].value = parentID.substring(parentID.lastIndexOf("_")+1);
+                }
+            }
+            if(this.className.indexOf("copyToRight") > -1){
+                showArrow(this);
+            }
+
+            var fieldName = jQuery(this).parents("td").nextUntil().find('input:not(.readonly)')[0].name;
+            if (fieldName != null && (fieldName.includes("Building") || fieldName.includes("Unit"))) {
+                if(jQuery(this).parents("td").nextUntil().find('input:not(.readonly)')[0].className.indexOf("showValidateMsg") > -1){
+                    window.alert('Editing Address Field(s) in Grid Edit will result in the property address changing to a Not-Validated status.');
+                }
+            }
+
+        }
+
+    }).blur(function(e) {
+        debug("Event input.blur: " +e);
+        jQuery(this).removeClass("editing");
+    }).change(function(e) {
+        debug("Event input.onchange: " +e);
+        updateField(this);
+    }).keydown(function(e) {
+        debug("Event input.keydown: " + e);
+        if ( getKeycode(e) == 13 && jQuery.fn.pwLookupWidget.inputLookupIndex < 0) {
+            handleSpecialKeys(e, this);
+        }
+    });
+
+    jQuery('#copyToRightArrow').click(function(){
+        copyBudgetToRight(jQuery(this).attr("alt"));
+    });
+
+    jQuery("input.lookup").pwLookupWidget();
+
+    jQuery("table.gridedit th, table.gridview th").click(function(e){
+        if(this.className.indexOf("noSort") == -1){
+            showColumnOptions(e, this);
+        }
+    });
+
+});
+
+function showArrow(element){
+    var position = jQuery(element).offset();
+    var posL = position.left + jQuery(element).width() + 5;
+    var posT = position.top + 4;
+    if(isIE){
+        posT = posT - 4 + jQuery("#contentWrapper").scrollTop();
+    }
+    if(element.parentNode){
+        jQuery("#copyToRightArrow").attr("alt", element.parentNode.id);
+        jQuery('#copyToRightArrow').css({left: posL, top: posT, width: '20px'});
+        jQuery("#copyToRightArrow").show("fast");
+    }
+}
+
+/* GridView functions*/
+
+function newGridView() {
+    showMask();
+    hideColumnOptions();
+    document.forms[formName].elements['itemIndex'].value = 0;
+    jQuery.post(formPath, {
+        action:'NewView'
+    });
+}
+
+function editGridView(id) {
+    hideColumnOptions();
+    document.forms[formName].elements['itemIndex'].value = 0;
+    document.forms[formName].elements['viewID'].value = id;
+    jQuery.post(formPath, {
+        action:'EditView',
+        viewID:id
+    });
+}
+
+function saveGridView() {
+    if(jQuery.trim(document.forms[formName].elements['viewName'].value) == ''){
+        jQuery("#gridEditFiltersMessage").addClass("errorBox");
+        jQuery("#gridEditFiltersMessage").html(getErrorMsgHTML('Name is required'));
+
+    } else {
+        var sourceSelect = document.getElementById('selectedColumns');
+        var len = sourceSelect.length;
+        document.forms[formName].gridColumns.value = '';
+        for (var i=0; i < len; i++) {
+            document.forms[formName].gridColumns.value += sourceSelect.options[i].value;
+            if (i < len){
+                document.forms[formName].gridColumns.value = document.forms[formName].gridColumns.value + ",";
+            }
+        }
+
+        document.forms[formName].elements['itemIndex'].value = selectedColumnIndex;
+        var submitURL = document.location.href.split('?')[0] +
+                        '?action=SaveView' +
+                        '&editViewID=' + jQuery("#editViewID").val() +
+                        '&gridColumns=' + encodeURIComponent(document.forms[formName].elements['gridColumns'].value) +
+                        '&itemIndex=' + document.forms[formName].elements['itemIndex'].value +
+                        '&viewName=' + encodeURIComponent(document.forms[formName].elements['viewName'].value) +
+                        '&shareView=' + document.forms[formName].elements['shareView'].checked +
+                        '&defaultOrderBy=' + encodeURIComponent(document.forms[formName].elements['defaultOrderBy'].value) +
+                        '&defaultOrderByDirection=' + document.forms[formName].elements['defaultOrderByDirection'].value +
+                        '&retUrl=' + document.forms[formName].elements['retUrl'].value;
+        debug(submitURL);
+        document.location.href = submitURL;
+    }
+}
+
+function deleteGridView() {
+    var conf = confirm('Are you sure?');
+    if(conf){
+        document.forms[formName].elements['itemIndex'].value = selectedColumnIndex;
+        var submitURL = document.location.href.split('?')[0] +
+                        '?action=DeleteView' +
+                        '&itemIndex=' + document.forms[formName].elements['itemIndex'].value +
+                        '&retUrl=' + document.forms[formName].elements['retUrl'].value +
+                        '&viewID=' + document.forms[formName].elements['viewID'].value;
+        debug(submitURL);
+        document.location.href = submitURL;
+    }
+}
+
+jQuery(document).ajaxComplete ( function(){removeLinkBehaviourReady();});
+
+function removeLinkBehaviourReady(){
+    jQuery("#currentFilters li").hover(function() {
+        jQuery(this).find('a').css({'visibility': 'visible'});
+    }, function() {
+        jQuery(this).find('a').css({'visibility': 'hidden'});
+    });
+}
+
+function setAsDefault() {
+    jQuery.get(formPath, {
+        action:'SetAsDefaultView',
+        viewID:document.forms[formName].elements['viewID'].value
+    });
+}
+
+function setDefaultViewPageSize(size) {
+    jQuery.get(formPath, {
+        action:'saveDefaultViewPageSize',
+        pageSize:size
+            });
+}
+
+var moreInfoTimeout;
+var moreInfoWaitTimeout;//wait or showing
+var entityID;
+var posLeft;
+var posTop;
+
+jQuery(document).ready(function(){
+
+    jQuery('#checkAllAuto').click(function(){
+        jQuery("INPUT:checkbox").attr('checked', jQuery('#checkAllAuto').is(':checked'));
+    });
+
+    jQuery('td.moreInfoEntity, td.moreInfoLeftEntity, td.moreInfoPortfolio, td.moreInfoBuilding, td.moreInfoUnit').mouseover(function(){
+        if(checkLoaded()){
+        window.clearTimeout(moreInfoTimeout);
+        showMoreInfoAction(this);
+        }
+    });
+    jQuery('td.moreInfoEntity, td.moreInfoLeftEntity, td.moreInfoPortfolio, td.moreInfoBuilding, td.moreInfoUnit').mouseout(function(){
+        window.clearTimeout(moreInfoWaitTimeout);
+        hideMoreInfoTimeout();
+    });
+    jQuery('#moreInfoDiv').mouseover(function() {
+        window.clearTimeout(moreInfoTimeout);
+    });
+    jQuery('#moreInfoDiv').mouseout(function() {
+        hideMoreInfoTimeout();
+    });
+
+});
+
+var hideMoreInfoTimeout = function() {
+    moreInfoTimeout = window.setTimeout(moreInfoHide, 1000);
+};
+
+var moreInfoHide = function() {
+    jQuery("#moreInfoDiv").hide("fast");
+};
+
+function showMoreInfoAction(input) {
+    var pos = jQuery(input).offset();
+    var html = input.innerHTML;
+    if(html.indexOf("entityID=") > -1){
+        html = html.substring(html.indexOf("entityID="));
+        entityID = html.substring(9, html.indexOf('"'));
+        posLeft = pos.left + jQuery(input).width() + 12;
+        posTop = pos.top;
+        if(isIE){
+            posTop = posTop + 1 + jQuery("#contentWrapper").scrollTop();
+        }
+
+        // Wait 1000 ms to make the ajax request !
+        moreInfoWaitTimeout = window.setTimeout(function(){showMoreInfoActionWithTimeout(input.className);}, 1000);
+
+    }
+
+}
+
+/**
+ * Ajax request to retrieve more info data.
+ */
+function showMoreInfoActionWithTimeout(className){
+    jQuery("#moreInfoTable").html("<tbody><tr><td id='moreInfoTD'>Loading...</td></tr></tbody>");
+
+    jQuery('#moreInfoDiv').css({left: posLeft, top: posTop, width: '280px'});
+
+    jQuery.post(formPath, {
+        action:'Show' + className.replace("more", "More"),
+        v:entityID
+    });
+
+    jQuery("#moreInfoDiv").show("fast");
+
+}
+
+function applyMoreInfo(){
+    jQuery('caption.captionToggle').click(function(){
+        var $captionDiv= jQuery(this);
+        var name = jQuery(this).parent().children()[1].id;
+        var $tBody = jQuery(this).parent().find("#"+name);
+        if($tBody.is(':hidden')){
+            $tBody.fadeIn('fast');
+            $captionDiv.css("background-image", "url(../images/minus.jpg)");
+        }else{
+            $tBody.fadeOut('fast');
+            $captionDiv.css("background-image", "url(../images/plus.jpg)");
+    }});
+
+}
+
+function getErrorMsgHTML(msg){
+    return "<h2>You must correct the following:</h2><ul><li>" + msg + "</li></ul>";
+}
+
+function cancelViewEdit(){
+    jQuery("#lookupDiv").hide();
+    destroyPopup('gridNewView');
+}
+
+function pushToEnterpriseLocation(){
+   
+    jQuery.post(formPath, {
+        action:'PushToEnterpriseLocation'
+    });
+}
+
+function cancelPushGridViewToEnterpriseLocations(){
+
+    destroyPopup('enterpriseLocations');
+}
+
+
+function savePushGridViewToEnterpriseLocations(){
+
+   var serializedForm = jQuery("#enterpriseLocationForm").serialize();
+   var checkBoxSelected =  jQuery('[name="enterpriseSystemLocationsToUpdate"]:checked').length;
+
+   if(checkBoxSelected == 0){
+        alert("You must select at least one view to push.");
+   }
+    else
+   {
+        jQuery.post('/pw/website/portals.do' + '?action=SavePushGridViewToEnterpriseLocations&'   + serializedForm   , {
+                 viewID: jQuery('select[name="viewID"] option:selected').val()  });
+        destroyPopup('enterpriseLocations');
+   }
+}
+
+
+
+//Email
+function emailContacts(module) {
+    var ids = "";
+    for (var i=0; i < document.forms[formName].elements.length; i++) {
+        if (document.forms[formName].elements[i].type == 'checkbox' && document.forms[formName].elements[i].checked &&
+            document.forms[formName].elements[i].id != 'checkAllAuto'){
+            ids += document.forms[formName].elements[i].id + ",";
+        }
+    }
+    if("" == ids){
+        if(module=='contact') {
+            alert("Must select at least 1 Contact");
+        }
+        else if(module=='vendor'){
+            alert("Must select at least 1 Vendor");
+        }
+        else if(module=='prospect'){
+            alert("Must select at least 1 Prospect");
+
+        }else if(module=='lease'){
+            alert("Must select at least 1 Lease");
+        }
+    }else{
+        showMask();
+        jQuery.post(formPath, {
+            action:'EditEmailView',
+            entityIDs: ids
+        });
+
+    }
+}
+
+function cancelEmail() {
+    isIOS = (navigator.userAgent.toUpperCase().indexOf('IPHONE') > 0) || (navigator.userAgent.toUpperCase().indexOf('IPAD') > 0);
+    isAndroid = (navigator.userAgent.toUpperCase().indexOf('ANDROID') > 0);
+
+    if(!isIOS && !isAndroid) tinyMCE.execCommand('mceRemoveControl', false, 'email.body');
+
+    jQuery('#emailFormContainer').remove();
+    hideMask();
+}
+
+function sendEmail() {
+    jQuery(":button").attr('disabled', 'disabled');
+    var editorId = tinyMCE.getEditorId('email.body');
+    if (tinyMCE.instances[editorId] != null) {
+        if(tinyMCE.instances[editorId].getHTML(true) == '<br>')
+            document.forms[formName].elements['email.body'].value = '';
+        else
+            document.forms[formName].elements['email.body'].value = tinyMCE.instances[editorId].getHTML(true);
+    }
+    document.forms[formName].elements['action'].value = 'SendEmailView';
+    document.forms[formName].elements['emailContactID'].value = '';
+    var value = false;
+    if ((document.forms[formName].elements['addToEmailLibrary'])) {
+        if(document.forms[formName].elements['addToEmailLibrary'].checked){
+            document.forms[formName].elements['addToEmailLibrary'].value = true;
+            value = true;
+        }
+    }
+
+    var sendToGroup = 0;
+    if(jQuery('#sendToGroup').val()) {
+        sendToGroup = jQuery('#sendToGroup').val();
+    }
+    var emailData = "";
+    if(jQuery('#emailData').val()){
+        emailData = jQuery('#emailData').val();
+    }
+
+    jQuery.post(formPath, {
+            action:'SendEmailView',
+            'email.subject':document.forms[formName].elements['email.subject'].value,
+            'email.body':document.forms[formName].elements['email.body'].value,
+            'email.cc':document.forms[formName].elements['email.cc'].value,
+            'email.bcc':document.forms[formName].elements['email.bcc'].value,
+             flyerLocation:document.forms[formName].elements['flyerLocation'].value,
+             flyerLocationOrgID:document.forms[formName].elements['flyerLocationOrgID'].value,
+             emailTemplateIDAsString:document.forms[formName].elements['emailTemplateIDAsString'].value,
+             flyerRentTemplate:document.forms[formName].elements['flyerRentTemplate'].value,
+             flyerTemplateCampaign:document.forms[formName].elements['flyerTemplateCampaign'].value,
+            'addToEmailLibrary':value,
+             emailContactID:document.forms[formName].elements['emailContactID'].value,
+             sendToGroup:sendToGroup,
+            'email.to':document.forms[formName].elements['email.to'].value,
+            'email.from':document.forms[formName].elements['email.from'].value,
+            'email.replyTo':document.forms[formName].elements['email.replyTo'].value,
+            'entityIDs':document.forms[formName].elements['entityIDs'].value,
+            'emailDataAsString': emailData
+        });
+
+}
+
+function loadTemplate() {
+    if (document.forms[formName].elements['emailTemplateIDAsString'].value != '') {
+        if(typeof(document.forms[formName].elements['addToEmailLibrary']) !=  'undefined'){
+            document.forms[formName].elements['addToEmailLibrary'].checked = false;
+        }
+        var templateID = document.forms[formName].elements['emailTemplateIDAsString'].value;
+        if(templateID.search('flyer_') != -1){ //FlyerTemplate.FLYER_IDENTIFY = "flyer_"
+            jQuery("#unitSearch").show("fast");
+            jQuery("#flyerType").show("fast");
+            jQuery("#flyerCampaign").show("fast");
+            jQuery("#addToEmailLibrary").attr('checked', false);
+            jQuery('#addToEmailLibrary').attr('disabled', 'disabled');
+            jQuery('#bodyEmail').hide();
+            jQuery("#email\\.subject").val('');
+            jQuery("#email\\.body").val('');
+        }else{
+            jQuery('#addToEmailLibrary').removeAttr('disabled');
+            jQuery("#unitSearch").hide();
+            jQuery("#flyerType").hide();
+            jQuery("#flyerCampaign").hide();
+            jQuery('#bodyEmail').show();
+            jQuery.get(formPath + '?action=LoadEmailTemplate&emailTemplateID=' + templateID);
+        }
+    }
+}
+
+function uploadEmailAttachments() {
+    jQuery("#waiting").fadeIn("slow");
+    var serializedForm = jQuery("#"+formName).serialize();
+    jQuery.get(formPath + '?action=UploadAttachments&' + serializedForm);
+}
+
+function showEmailAttachmentsForm() {
+    _popUp(formPath + '?action=PopupEmailAttachmentsForm', 435, 355);
+}
+
+function refreshEmailAttachments(html) {
+    document.getElementById('emailAttachments').innerHTML = html;
+}
+
+function removeEmailAttachment(attachmentIndex) {
+     jQuery.post(formPath, {
+            action:'RemoveAttachment',
+            deleteIndex: attachmentIndex
+        });
+}
+
+//Screening
+function backgroundScreeningInterfaceSelectContact(id){
+    showMask();
+    jQuery.get("home.do?action=BackgroundScreeningInterfaceSelectContact&entityID=" + id);
+}
+
+function cancelPopup(id){
+    hideMask();
+    jQuery('#' + id).remove();
+}
+
+function backgroundScreeningInterface(id){
+    showMask();
+    document.location.href = formPath + "?entityID=" + id + "&action=BackgroundScreeningInterface";
+}
+
+function completeScreen(id, manageMask){
+    if(manageMask) showMask();
+    var url = formPath + "?id=" + id + "&action=BackgroundScreeningInterface&sAction=submit";
+    _popUp(url, "900", "700", "completeScreen");
+    if(manageMask) hideMask();
+
+}
+
+function screenHousehold(id){
+    showMask();
+    jQuery.get("home.do?action=BackgroundScreeningValidate&entityID=" + id);
+}
+
+function rescreenHousehold(id) {
+    var answer = confirm(reScreenConfirmAlert);
+    if(answer){
+        screenHousehold(id);
+    }
+}
+
+function screenAlert(id) {
+    showMask();
+    var serializedForm = jQuery("#defaultActionForm").serialize();
+    jQuery.post('home.do?action=ScreeningAlert&entityID='+id+'&'+serializedForm);
+}
+
+function screenOnSiteHousehold(id){
+    var str = String(id);
+    var entityId;
+    var isRescreen;
+    var addressBrokerStatus;
+    var wizard;
+    var validateAddress;
+    if(str.indexOf(',') != -1){
+        entityId = str.split(',')[0];
+        isRescreen = str.split(',')[1];
+        addressBrokerStatus = str.split(',')[2];
+        wizard = str.split(',')[3];
+        validateAddress = str.split(',')[4];
+    }
+    if(wizard == 'true') {
+        if (isRescreen == 'true') {
+            var answer = confirm(reScreenWarningConfirm);
+            if (answer) {
+                if (validateAddress == 'true' && addressBrokerStatus != undefined && addressBrokerStatus != validatedAddressBrokerStatus) {
+                    alert(addressValidationAlert);
+                } else {
+                    showMask();
+                    jQuery.get("home.do?action=BackgroundScreeningValidate&entityID=" + entityId);
+                }
+            }
+        } else {
+            if (validateAddress == 'true' && addressBrokerStatus != undefined && addressBrokerStatus != validatedAddressBrokerStatus) {
+                alert(addressValidationAlert);
+            } else {
+                showMask();
+                jQuery.get("home.do?action=BackgroundScreeningValidate&entityID=" + entityId);
+            }
+
+        }
+    }else{
+        alert(setupWizardAlert);
+    }
+}
+
+function rescreenOnSiteHousehold(id) {
+    var str = String(id);
+    var wizard;
+    if(str.indexOf(',') != -1) {
+        wizard = str.split(',')[3];
+    }
+    if(wizard == 'true') {
+        var answer = confirm(reCalculateConfirmAlert);
+        if (answer) {
+            screenOnSiteHousehold(id);
+        }
+    }else {
+        alert(setupWizardAlert);
+    }
+}
+
+function runScreening(id){
+    jQuery.get("home.do?action=BackgroundScreeningRun&screeningProfileID=" + jQuery('#screeningProfileID').val() + "&entityID=" + jQuery("#entityID").val());
+    jQuery('#profileSelection').css({'z-index':'1'});
+}
+
+var expDate = new Date();
+expDate.setTime(expDate.getTime()+365*24*60*60*1000); // one year
+
+function setCookie(isName,isValue,dExpires){
+
+    document.cookie = isName+"="+isValue+";expires="+dExpires.toGMTString();
+}
+
+function getCookie(isName){
+
+    cookieStr = document.cookie;
+    startSlice = cookieStr.indexOf(isName+"=");
+    if (startSlice == -1){return false}
+    endSlice = cookieStr.indexOf(";",startSlice+1)
+    if (endSlice == -1){endSlice = cookieStr.length}
+    isData = cookieStr.substring(startSlice,endSlice)
+    isValue = isData.substring(isData.indexOf("=")+1,isData.length);
+    return isValue;
+}
+
+function cancelMassUpdate() {
+    destroyPopup('massUpdateDiv');
+    jQuery("input.lookup").pwLookupWidget(); // Setting handler to lookup fields.
+}
+
+function checkLoaded() {
+    return document.readyState === "complete" || document.readyState === "interactive";
+}

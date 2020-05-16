@@ -1,0 +1,97 @@
+
+jQuery().ready(function() {
+    jQuery("#tabDetail").css("background-color", "#ffffff");
+    jQuery("#tabDetail").css("font-weight", "bold");
+});
+
+function switchTab(tabIndex) {
+    document.forms[formName].action.value = 'SwitchTab';
+    document.forms[formName].tabIndex.value = tabIndex;
+    document.forms[formName].submit();
+
+}
+
+function batchClose(){
+    document.forms[formName].action.value = 'BatchClose';
+    document.forms[formName].submit();
+}
+
+
+function batchDelete(){
+    var conf = confirm('Are you sure?');
+    if(conf){
+        document.forms[formName].action.value = 'BatchDelete';
+        document.forms[formName].submit();
+    }
+}
+
+function MailMerge() {
+    if(document.getElementById('showingView.gridPropertyFilterOn') != null){
+        document.getElementById('showingView.gridPropertyFilterOn').removeAttribute('name');
+    }
+    document.forms[formName].action.value = 'MailMerge';
+    document.forms[formName].submit();
+}
+
+function showServiceRequests(){
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Service Request&action=ChangeGridFilter';
+}
+function showTurnovers(){
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Turnover&action=ChangeGridFilter';
+}
+function showOpenWorkOrders(){
+    document.location.href='/pw/maintenance/maintenance_home.do?action=ChangeGridFilter';
+}
+function showInspections(){
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Inspection&action=ChangeGridFilter';
+}
+function showRequiringApprovals(){
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Requiring Approval&action=ChangeGridFilter';
+}
+
+function showMoreInfoAction(input) {
+    var pos = jQuery(input).offset();
+    var html = input.innerHTML;
+    if(html.indexOf("entityID=") > -1){
+        html = html.substring(html.indexOf("entityID="));
+        vendorID = html.substring(9, html.indexOf('"'));
+        posLeft = pos.left - 324;
+        posTop = pos.top;
+        if(isIE){
+            posLeft = posLeft + 4;
+            posTop = posTop + 1 + jQuery("#contentWrapper").scrollTop();
+        }
+        // Wait 1000 ms to make the ajax request !
+        moreInfoWaitTimeout = window.setTimeout(function(){showMoreInfoActionWithTimeout(input.className);}, 1000);
+    }
+
+}
+
+/**
+ * Ajax request to retrieve more info data.
+ */
+function showMoreInfoActionWithTimeout(className){
+    jQuery("#moreInfoTable").html("<tbody><tr><td id='moreInfoTD'>Loading...</td></tr></tbody>");
+
+    jQuery('#moreInfoDiv').css({left: posLeft, top: posTop, width: '320px'});
+
+    jQuery.post(formPath, {
+        action:'Show' + className.replace("more", "More").replace("Left",""),
+        v:vendorID
+    });
+
+    jQuery("#moreInfoDiv").show("fast");
+
+}
+
+function showAllServiceAgreements() {
+    document.location.href='/pw/maintenance/maintenance_home.do?value=All&action=ChangeGridFilter';
+}
+
+function showOpenServiceAgreements() {
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Open&action=ChangeGridFilter';
+}
+
+function showClosedServiceAgreements() {
+    document.location.href='/pw/maintenance/maintenance_home.do?value=Closed&action=ChangeGridFilter';
+}

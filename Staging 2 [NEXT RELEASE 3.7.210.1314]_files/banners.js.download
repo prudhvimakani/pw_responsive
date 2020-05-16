@@ -1,0 +1,96 @@
+/**
+ * Created by SChejerla on 4/24/2015.
+ */
+
+var bannerUrls = {
+    'EPAY'              :   'http://www.propertyware.com/electronic-payments/',
+    'MAINTENANCE-PLUS'  :   'http://www.propertywaremaintenance.com/',
+    'INSURANCE'         :   'http://www.propertyware.com/renters-insurance/'
+}
+
+jQuery(document).ready(function(){
+    // adjust position based on page - new lease
+    if(jQuery(location).attr('pathname').lastIndexOf('lease_edit.do') > -1){
+        jQuery('#banner-insurance').addClass("banner-insurance-new-lease");
+        jQuery('#banner-insurance-x').addClass("banner-container-new-lease-x");
+
+        // reposition RI ad, on window resize, to position below save & cancel buttons
+        _centerRIDiv();
+        jQuery(window).resize(_centerRIDiv);
+    }
+
+    // banner body click handler
+    jQuery("#banner-epay, #banner-vmm, #banner-insurance").click(function(e) {
+        var name = jQuery(this).attr("name");
+        _gaq.push(['_trackEvent', 'ad-banner', 'click', name]);
+        window.open(bannerUrls[name]);
+    });
+
+    // banner close click handler
+    jQuery("#banner-epay-x, #banner-vmm-x, #banner-insurance-x").click(function(e){
+        // hide banner
+        jQuery(this).parent().remove();
+        e.stopPropagation();
+
+        // if any other banners present show
+        if(jQuery('.banner-container').length >0) {
+            jQuery('.banner-container').eq(0).animate({left: '0px'}).fadeIn();
+        }
+
+        // set dialog closed status in session
+        jQuery.ajax({
+            type:"POST",
+            url:"/pw/banner_update.do?action=BannerUpdateAction",
+            data: {
+                type: jQuery(this).parent().attr("name"),
+                status: "Y"
+            },
+            cache:false,
+            success: function(response){
+                //nothing to handle for now
+            }
+        });
+    });
+
+    // banners rotation
+    var InfiniteRotator = {
+        init: function() {
+            var initialFadeIn = 0;
+            var itemInterval = 20000;
+            var fadeTime = 0;
+            var currentItem = 0;
+
+            //loop through the items
+            var infiniteLoop = setInterval(function(){
+                var jQueryBanners = jQuery('.banner-container');
+                var numberOfItems = jQueryBanners.length;
+                if(numberOfItems > 1) {
+                    jQueryBanners.eq(currentItem).animate({left: '-200px'}).fadeOut(fadeTime);
+                    if (currentItem == numberOfItems - 1) {
+                        currentItem = 0;
+                    } else {
+                        currentItem++;
+                    }
+                    jQueryBanners.eq(currentItem).animate({left: '0px'}).fadeIn(fadeTime);
+                } else {
+                    clearInterval(infiniteLoop);
+                }
+            }, itemInterval);
+        }
+    };
+
+    var jQueryBanners = jQuery('.banner-container');
+    if(jQueryBanners.length > 1) {
+        jQueryBanners.not(':first').hide();
+        InfiniteRotator.init();
+    }
+});
+
+function _centerRIDiv() {
+    if(jQuery(location).attr('pathname').lastIndexOf('lease_edit.do') > -1) {
+        jQuery('#banner-insurance').css({
+            top:  jQuery("#entity\\.status").offset().top + window.scrollY - 10,
+            left: leftPos = jQuery('div.primaryButtons > input:first').offset().left - 25
+        });
+    }
+}

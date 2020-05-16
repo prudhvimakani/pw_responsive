@@ -1,0 +1,404 @@
+#gridDiv table.gridedit td input.text, input.date, input.currency, input.lookup, input.file, select.select, input.currencyText, input.checkbox   {
+    padding: 4px;
+}
+#gridDiv table.gridedit td input.text:hover, input.date:hover, input.currency:hover, input.lookup:hover, input.file:hover, select.select:hover, input.currencyText:hover, input.checkbox:hover {
+    padding:2px;
+}
+#gridDiv table.gridedit td input.text:focus, input.date:focus, input.currency:focus, input.lookup:focus, input.file:focus, select.select:focus, input.currencyText:focus, input.checkbox:focus {
+    padding:2px;
+}
+
+#gridViews {
+    margin: 0;
+    margin-left: 8px;
+    text-align: left;
+}
+
+#gridDiv {
+    margin: 10px;
+}
+
+table.gridedit input {
+    border:none;
+    width: 100%;
+    font-weight: normal;
+    color: black;
+    font-family: tahoma;
+    /*_padding:0;*/
+    background-color: #fff !important; 
+    border: solid 1px #dadada !important;
+}
+
+table.gridedit select {
+    border:none;
+    width: 100%;
+    color: black;
+    font-weight: normal;
+    font-family: tahoma;
+    
+}
+
+table.gridedit input.date { text-align: center; width:110px; }
+table.gridedit input.boolean { text-align: center }
+table.gridedit input.currency { text-align: right }
+table.gridedit input.number { text-align: right }
+table.gridedit input.percent { text-align: right }
+input.lookup { background-image: none; }
+
+table.gridedit th.date { text-align: center }
+table.gridedit th.boolean { text-align: center }
+table.gridedit th.currency { text-align: right }
+table.gridedit th.number { text-align: right }
+table.gridedit th.percent { text-align: right }
+
+th b {/*display: inline-block; width: 98%;*/ }
+
+th b.sort_asc {background: transparent url("../images/sort_asc.gif") no-repeat 100% 50%; padding-right: 20px; }
+th b.sort_desc {background: transparent url("../images/sort_desc.gif") no-repeat 100% 50%; padding-right: 20px; }
+th b.readonly {background: transparent url("../images/lock.png") no-repeat 100% 50%; padding-right: 20px; padding-top:2px; }
+th b.filter {background: transparent url("../images/filter.png") no-repeat 100% 50%; padding: 2px 20px; }
+
+th b.sort_desc b.filter, th b.sort_asc b.filter {background-image: none}
+th#th_2 b.filter {background-image: none !important;}
+
+#lookupDiv {
+    z-index: 99999999; /* this is a pop-over, make sure we're on top */
+    border: 1px solid gray;
+    position: absolute;
+    background-color: #ffffff;
+}
+
+#lookupDiv ul {
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#lookupDiv li:hover {
+    cursor: pointer;
+    background-color: #316ac5;
+    color: white;
+}
+
+#currentFilters {
+    margin-top: 0;
+    padding: 10px 20px 10px 20px;
+    background-color: white;
+    border: 1px solid lightgray;
+    text-align: left;
+    list-style: circle;
+   /* font-size: 1.2em;      */
+}
+#currentFilters span.filterColumn { color: #666666; }
+#currentFilters span.filterValue { color: #666666; }
+#currentFilters span.filterOperator { font-weight: bold}
+#currentFilters a { visibility: hidden; }
+
+li.lookupSelected {
+    background-color: #316ac5;
+    color: white;
+}
+
+#columnOptionsDiv {
+    z-index: 10;
+    border: 1px solid #868686;
+    position: absolute;
+/*
+    background: #fafafa url(../images/grid-edit-column-options-bg.png) repeat-y;
+*/
+}
+#columnOptionsDiv ul {
+    text-align: left;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    list-style: none;
+    background-color: #fafafa;
+}
+#columnOptionsDiv li {
+    padding: 2px 4px;
+}
+#columnOptionsDiv li:hover {
+    background-color: #ffd761;
+    cursor: pointer;
+}
+
+div.box {
+    display: block;
+    margin: 0;
+    border: 1px solid #bbbbbb;
+    color: #666666;
+    background-color: #f2f6ff;
+    padding: 2px;
+/*width: 100%;*/
+}
+
+div.paginationControls {
+    margin: 2px 8px 2px 2px;
+    float: left;
+    width: 50%;
+    font-weight: normal;
+}
+
+#reportData div.paginationControls select, div.pationationControls span {
+    float: left;
+    font-weight: normal;
+    width: auto;
+}
+
+div.paginationControls .buttonLabel {
+    float: left;
+    line-height: 1.2em;
+    margin: 0;
+    padding: 0.2em 0 0 0;
+    color: #222;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    div.paginationControls .buttonLabel {
+        line-height: 2.3em;
+        padding: 0;
+    }
+
+    div.paginationControls a {
+        padding-top: 4px;
+    }
+}
+
+.float-left {
+    float:left;
+}
+
+.margin-bottom {
+    margin-bottom:5px;
+}
+
+input.error {
+    border-bottom: 2px solid red;
+}
+
+input.editing {
+    background-color: #e7e7e7;
+}
+
+#massUpdateDiv h2 {
+    background: url(../images/db_update_32.png) no-repeat 10px center;
+    padding-left: 50px;
+}
+
+#gridMessageBoard .error {
+    color: red;
+}
+
+
+/* Overrides global */
+table.edit caption {
+    padding-left: 10px; background-image: none;
+}
+
+table{clear:both;width:100%;_width: 99%;border-collapse:collapse;}
+table td{vertical-align:top;}
+table td.left{text-align:left;}
+table td.right{text-align:right;}
+table tfoot.hide{display:none;}
+tr.on{background-color:#e8f1ff;cursor:pointer;}
+tr.off{background-color:#FFF;cursor:pointer;}
+table.align-top tr td{vertical-align:top;}
+table.gridedit td,th{padding:5px 2px;font-weight:400;color:#000;}
+table.gridedit thead th{background:#F2F6FF;border-bottom:solid 1px #b7c0c7;white-space:nowrap; font-weight: bold; color: rgb(0, 138, 179); text-align: left}
+table.gridedit tfoot td{border-bottom:double 3px #000;border-top:solid 1px #000;}
+table.gridedit tbody tr td{border-bottom:solid 1px #DDD;}
+table.gridedit thead th:hover {background-color: #d9ebf9; cursor:pointer}
+table.gridedit thead td{background:#F2F6FF;border-bottom:solid 1px #b7c0c7;white-space:nowrap; font-weight: bold; color: rgb(0, 138, 179); text-align: left}
+
+table.gridedit .timestamp, table.gridedit .date{
+    min-width:80px;
+    _width:90px;
+}
+
+table.gridedit select{
+    min-width:80px;
+    _width:100px;
+}
+
+/*grid non editable */
+table.gridview input {
+    border:none;    
+    font-weight: normal;
+    color: black;
+    font-family: tahoma;
+}
+
+table.gridview select {
+    border:none;
+    width: 100%;
+    color: black;
+    font-weight: normal;
+    font-family: tahoma;
+}
+
+table.gridview th.boolean { text-align: center }
+table.gridview th.currency { text-align: right }
+table.gridview th.number { text-align: right }
+table.gridview th.percent { text-align: right }
+
+table.gridview td,th{padding:5px 6px;font-weight:400;color:#000;}
+table.gridview thead th{background:#F2F6FF;border-bottom:solid 1px #b7c0c7;white-space:nowrap; font-weight: bold; color: rgb(0, 138, 179); text-align: left;}
+table.gridview tfoot td{border-bottom:double 3px #000;border-top:solid 1px #000;}
+table.gridview tbody tr td{border-bottom:solid 1px #DDD;}
+table.gridview thead th:hover {background-color: #d9ebf9; cursor:pointer}
+
+#maintenanceHomeForm #gridDiv .gridview .Memo{
+    width:20%;
+}
+
+.zoomItem img{
+    border: 0;
+}
+
+.zoomItem a{
+    font-weight:bold;
+    font-size:20px;
+}
+
+.zoomItem a:visited {
+    font-weight:bold;
+    font-size:20px;
+}
+
+#gridViewSubtitle {
+    font-weight: bold;
+    border-bottom: 0;
+}
+
+#moreInfoDiv {
+    background-color:#e7e7e7;
+    border: 2px solid #cccccc;
+    width:100px;
+    position:absolute;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -border-radius: 5px;
+}
+
+#moreInfoTable{
+    line-height:12px;
+}
+#moreInfoTable th{
+    font-weight:bold;
+    text-align:right;
+    width:40%;
+    padding:5px 6px
+}
+#moreInfoTable td{
+    text-align:left;
+    width:60%;
+    padding:5px 6px
+}
+#moreInfoTable a{
+    font-weight:bold;
+}
+
+.zoomTable td{
+    width:20%;
+}
+.zoomTable th{
+    width:5%;
+    text-align:right;
+}
+
+Table td.moreInfoLeftEntity {
+    background: url(../images/red-triangle.gif) no-repeat 0 0;
+}
+Table td.moreInfoEntity, td.moreInfoPortfolio, td.moreInfoBuilding, td.moreInfoUnit{
+    background: url(../images/red-triangle-right.gif) no-repeat 100% 0;
+}
+
+.moreInfoLabel{
+    text-align:right;
+    float:right;
+    background: url(../images/red-triangle-right.gif) 0 6px no-repeat;
+    padding:2px;
+    padding-left:6px;
+}
+#cal1{
+    width:160px;
+}
+
+.propertyFilter{
+    float:right;
+    text-align:right;
+    position:absolute;
+    top:80px;
+    _top:83px;
+    right:100px;
+    font-weight:bold;
+}
+
+#moreInfoOwners caption{
+    background: #C2BCDA url(../images/plus.jpg) no-repeat 2px 5px;
+    margin-bottom:5px;
+    width:100%;
+    cursor:pointer;
+}
+
+#moreInfoOwners caption label{
+    margin-left:16px;
+    cursor:pointer;
+}
+
+#moreInfoDiv th.fullColor {    
+    margin:5px;
+
+    text-align:left;
+    white-space:nowrap;
+    padding-top: 15px;
+}
+
+#profileTable td{
+    border:0;
+    text-align:center;
+}
+#profileTable th{
+    border:0;
+    text-align:right;
+
+}
+
+#screeningActionColumn{
+    width:100px;
+    _width:160px;
+    border:solid grey 1px;
+    font-size:12px;
+}
+
+input.text, input.date, input.currency, input.lookup, input.file, textarea, select, textarea.textarea, select.select, input.currencyText, input.checkbox   {
+    font-size: 14px;
+    border: solid 2px #dddddd;
+    font-weight: normal;
+    color: #111111;
+    cursor: pointer;
+    padding: 2px;
+    background-color: #FFFFFF;
+}
+
+input.text:hover, input.date:hover, input.currency:hover, input.lookup:hover, input.file:hover, textarea:hover, select:hover, textarea.textarea:hover, select.select:hover, input.currencyText:hover, input.checkbox:hover {
+    border: solid 2px #aaaaaa;
+}
+
+input.text:focus, input.date:focus, input.currency:focus, input.lookup:focus, input.file:focus, textarea:focus, select:focus, textarea.textarea:focus, select.select:focus, input.currencyText:focus, input.checkbox:focus {
+    border: solid 2px #94C1E8;
+}
+
+input.lookup {
+    background: #FFFFFF url("../images/magnifier.gif") no-repeat 100% 50%;
+    padding-right: 20px;
+}
+
+input.lookup:hover{
+    padding-right: 20px;
+}
+
+input.lookup:focus{
+    padding-right: 20px;
+}

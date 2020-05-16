@@ -1,0 +1,6 @@
+var setupWizardAlert = "Screening criteria have not been set for On-Site screening. Please edit your screening settings in Setup>Administration Setup>Tenant Screening>Settings.";
+var addressValidationAlert = "The Property assigned to this Prospect must have a validated address to run screening. Please Update the Address of the Desired Property with an address that can be validated and then run screening.";
+var reScreenConfirmAlert = "A Background Screening check has already been run on this household. Running a new check will incur additional charges to your account. Are you sure you want to process a new Background Screening check?";
+var reCalculateConfirmAlert = "Recalculate will update the screening result based on changes that may have been made to the existing prospect(s). This will not rerun any credit or background screens. If you need to run an entirely new screen, create a new prospect record and screen the new prospect.";
+var reScreenWarningConfirm = "Warning: The change(s) made to one or more applicants associated with this prospect record have changed. If you re-screen this applicant a new screen will be run and you will be charged accordingly. Do you wish to continue?";
+var validatedAddressBrokerStatus = 2;

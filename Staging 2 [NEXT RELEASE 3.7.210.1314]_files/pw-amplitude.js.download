@@ -1,0 +1,598 @@
+try {
+    if (amplitudeEnabled && loadAmplitude) {
+    if (typeof amplitude === 'undefined') {
+
+        (function(e,t){var n=e.amplitude||{_q:[],_iq:{}};var r=t.createElement("script")
+        ;r.type="text/javascript"
+        ;r.integrity="sha384-vYYnQ3LPdp/RkQjoKBTGSq0X5F73gXU3G2QopHaIfna0Ct1JRWzwrmEz115NzOta"
+        ;r.crossOrigin="anonymous";r.async=true
+        ;r.src="https://cdn.amplitude.com/libs/amplitude-5.8.0-min.gz.js"
+        ;r.onload=function(){if(!e.amplitude.runQueuedFunctions){
+            console.log("[Amplitude] Error: could not load SDK")}}
+        ;var i=t.getElementsByTagName("script")[0];i.parentNode.insertBefore(r,i)
+        ;function s(e,t){e.prototype[t]=function(){
+            this._q.push([t].concat(Array.prototype.slice.call(arguments,0)));return this}}
+            var o=function(){this._q=[];return this}
+            ;var a=["add","append","clearAll","prepend","set","setOnce","unset"]
+            ;for(var u=0;u<a.length;u++){s(o,a[u])}n.Identify=o;var c=function(){this._q=[]
+                ;return this}
+            ;var l=["setProductId","setQuantity","setPrice","setRevenueType","setEventProperties"]
+            ;for(var p=0;p<l.length;p++){s(c,l[p])}n.Revenue=c
+            ;var d=["init","logEvent","logRevenue","setUserId","setUserProperties","setOptOut","setVersionName","setDomain","setDeviceId","enableTracking","setGlobalUserProperties","identify","clearUserProperties","setGroup","logRevenueV2","regenerateDeviceId","groupIdentify","onInit","logEventWithTimestamp","logEventWithGroups","setSessionId","resetSessionId"]
+            ;function v(e){function t(t){e[t]=function(){
+                e._q.push([t].concat(Array.prototype.slice.call(arguments,0)))}}
+                for(var n=0;n<d.length;n++){t(d[n])}}v(n);n.getInstance=function(e){
+                e=(!e||e.length===0?"$default_instance":e).toLowerCase()
+                ;if(!n._iq.hasOwnProperty(e)){n._iq[e]={_q:[]};v(n._iq[e])}return n._iq[e]}
+            ;e.amplitude=n})(window,document);
+
+        //  console.log("amplitude init. APIKey:  " + amplitudeAPIKey)
+        amplitude.getInstance().init(amplitudeAPIKey, userIdForAmplitude);
+       //  console.log("Initiated with amplitude key.");
+
+        amplitude.getInstance().setGroup('account_id', orgIdForAmplitude);
+        // console.log ("Group is set");
+
+        var gIdentify = new amplitude.Identify().set('units_managed', unitCount);
+       // console.log("created groupIdentify object.");
+        amplitude.getInstance().groupIdentify('account_id', orgIdForAmplitude, gIdentify);
+      //  console.log("Group properties are set");
+
+        amplitude.getInstance().setUserProperties(amplitudeUserProperties);
+
+    }
+    }
+} catch (err) {
+    console.log("Amplitude error.:  " + err);
+}
+
+function logAmplitudeEvent(eventName) {
+    try {
+        if (amplitudeEnabled) {
+            amplitude.getInstance().logEvent(eventName);
+          //  console.log("Logging event " + eventName);
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}
+
+function logAmplitudeEventModuleSelected(obj) {
+    try {
+        if (amplitudeEnabled) {
+            var moduleName = jQuery(obj).text();
+            if (('Dashboards' === moduleName) || ('Marketing' === moduleName) || ('Leases' === moduleName)) {
+                var eventProperties = {};
+                eventProperties.moduleName = moduleName;
+                // console.log("Logging event select module, eventProperties: " + eventProperties);
+                amplitude.getInstance().logEvent("select module", eventProperties);
+                loginEventLogged = true;
+            }
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}
+
+function logAmplitudeEventSelectPage(pageName) {
+    try {
+        if (amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.moduleName = pageName;
+           // console.log("Logging event select page: " + pageName + ", eventProperties: " + eventProperties + ", amplitudeAPIKey: " + amplitudeAPIKey);
+            amplitude.getInstance().logEvent("select page", eventProperties);
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}
+
+function logAmplitudeSelectStatus(obj) {
+    try {
+        if(amplitudeEnabled) {
+            var text = obj.options[obj.selectedIndex].text;
+            var eventProperties = {};
+            eventProperties.status = text;
+          //  console.log("Logging event select status: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("select status", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeDatesSelected(text) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.dateFieldsUpdated = text;
+          //  console.log("Logging event dates selected status: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("update dates", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeNewPlan(obj) {
+    try {
+        if(amplitudeEnabled) {
+            var text = obj.options[obj.selectedIndex].text;
+            var eventProperties = {};
+            eventProperties.assistancePlan = text;
+          //  console.log("Logging event select public assistance plan: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("select public assistance plan", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeSearchTag(text) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.tagAppended = text;
+         //   console.log("Logging event append search tag: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("append search tag", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeDescription(text) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.descriptionText = text;
+         //   console.log("Logging event enter description: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("enter description", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAddCharge(amount, comments) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.amount = amount;
+            eventProperties.comments = comments;
+         //   console.log("Logging event add charge: amount: " + amount + ",comments: " + comments + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("add charge", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAddAutoCharge(amt, frq) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.rentAmount = amt;
+            eventProperties.frequency = frq;
+           // console.log("Logging event add charge: amount: " + amt + ",frq: " + frq + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("add auto charge", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeSetupAutoEpay(payer, amt, frq) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.payer = payer;
+            eventProperties.rentAmount = amt;
+            eventProperties.frequency = frq;
+          //  console.log("Logging event set up auto epayments. payer:" + payer + ", amount: " + amt + ",frq: " + frq + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("set up auto epayments", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAutoJournal(autoJournalDate) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.journalDate = autoJournalDate;
+         //   console.log("Logging event new auto journal entry. journal date:" + autoJournalDate + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("new auto journal entry", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudePmtTypes(restPaymentTypes) {
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.types = restPaymentTypes;
+        //    console.log("Logging event restrict payment types. types:" + restPaymentTypes);
+            amplitude.getInstance().logEvent("restrict payment types", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeManagedby(obj) {
+    try {
+        if(amplitudeEnabled) {
+            var text = obj.options[obj.selectedIndex].text;
+            var eventProperties = {};
+            eventProperties.managedBy = text;
+         //   console.log("Logging event managed by. managedBy: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("managed by", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeCostEstimate(obj) {
+    try {
+        if(amplitudeEnabled) {
+            var text = obj.value;
+            var eventProperties = {};
+            eventProperties.costEstimate = text;
+         //   console.log("Logging event cost estimate. costEstimate: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("cost estimate", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logFrequency (obj) {
+    try {
+        if(amplitudeEnabled) {
+            var text = obj.options[obj.selectedIndex].text;
+            var eventProperties = {};
+            eventProperties.frequency = text;
+         //   console.log("Logging event schedule every 2. frequency: " + text + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("schedule every 2", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logEmailDocument(documentType){
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.documentType = documentType;
+         //   console.log("Logging event email this document. documentType: " + documentType + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("email this document", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeSendEmail(){
+    try {
+        if(amplitudeEnabled) {
+            var recipient = "";
+            var documentType = "";
+            var rVal = jQuery("input[name='sendToGroup']:checked").val();
+            if (rVal === "2") {
+                recipient = "Tenant";
+            } else if (rVal === "5") {
+                recipient = "Owner";
+            }
+            if (document.getElementById('hiddenAttachment') != null) {
+                documentType = document.getElementById('hiddenAttachment').value;
+            }
+            var eventProperties = {};
+
+            eventProperties.recipient = recipient;
+            eventProperties.documentType = documentType;
+         //   console.log("Logging event send email. recipient: " + recipient + ", documentType: " + documentType + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("send email", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeEmailDoc() {
+    try {
+        if(amplitudeEnabled) {
+            var documentType = '';
+            if (document.getElementById("leaseDetailForm.templateID") != null) {
+                var templateObj = document.getElementById('leaseDetailForm.templateID');
+                var templateIndex = templateObj.selectedIndex;
+                if (templateIndex != -1) {
+                    documentType = templateObj.options[templateObj.selectedIndex].text;
+                }
+            }
+            if (document.getElementById("leaseDetailForm.packetID") != null) {
+                var templateObj = document.getElementById('leaseDetailForm.packetID');
+                var templateIndex = templateObj.selectedIndex;
+                if (templateIndex != -1) {
+                    documentType = templateObj.options[templateObj.selectedIndex].text;
+                }
+            }
+            if (document.getElementById("leaseDetailForm.templateDocumentID") != null) {
+                var templateObj = document.getElementById('leaseDetailForm.templateDocumentID');
+                var templateIndex = templateObj.selectedIndex;
+                if (templateIndex != -1) {
+                    documentType = templateObj.options[templateObj.selectedIndex].text;
+                }
+            }
+            if (documentType.length > 0) {
+                logEmailDocument(documentType);
+            }
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeRentBump() {
+    try {
+        if(amplitudeEnabled) {
+            var rentBumpType = "";
+            var rentBumpValue = "";
+            var eventProperties = {};
+            var rVal = jQuery("input[name='rentalBumpType']:checked").val();
+            if (rVal === "1") {
+                rentBumpType = "Percentage";
+                rentBumpValue = document.getElementById("rentalBumpPercentAsString").value;
+                var obj = document.getElementById("rentalBumpPercentRoundAsString");
+                var rounding = obj.options[obj.selectedIndex].text;
+                eventProperties.rentBumpType = rentBumpType;
+
+                eventProperties.rentBumpValue = rentBumpValue;
+                eventProperties.rounding = rounding;
+             //   console.log("Logging event view rent bump. rentBumpType: " + rentBumpType + ", rentBumpValue: " + rentBumpValue + ", rounding: " + rounding + ", eventProperties: " + eventProperties);
+            } else if (rVal === "2") {
+                rentBumpType = "Amount";
+                rentBumpValue = document.getElementById("rentalBumpAmountAsString").value;
+                eventProperties.rentBumpType = rentBumpType;
+                eventProperties.rentBumpValue = rentBumpValue;
+            //    console.log("Logging event view rent bump. rentBumpType: " + rentBumpType + ", rentBumpValue: " + rentBumpValue + ", eventProperties: " + eventProperties);
+            }
+            amplitude.getInstance().logEvent("view rent bump", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAmtEntered(amount){
+    try {
+        if(amplitudeEnabled) {
+            var eventProperties = {};
+            eventProperties.amount = amount;
+          //  console.log("Logging event amount entered. amount: " + amount + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("amount entered", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeMarkPaid(obj){
+    try {
+        if(amplitudeEnabled) {
+            var paid = "";
+            if (obj.checked) {
+                paid = "yes";
+            } else {
+                paid = "no";
+            }
+            var eventProperties = {};
+            eventProperties.paid = paid;
+          //  console.log("Logging event marked as paid. paid: " + paid + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("marked as paid", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeView(){
+    try {
+        if(amplitudeEnabled) {
+            var view = document.getElementById("viewAction").value;
+            var publicView = document.getElementById("shareView").checked;
+            var shareability = "";
+            if (publicView) {
+                shareability = "public";
+            } else {
+                shareability = "private";
+            }
+            var eventProperties = {};
+            eventProperties.shareability = shareability;
+          //  console.log("Logging event " + view + " shareability: " + shareability + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent(view, eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeDeleteView(){
+    try {
+        if(amplitudeEnabled) {
+            var view = 'delete view';
+            var publicView = document.getElementById("shareView").checked;
+            var shareability = "";
+            if (publicView) {
+                shareability = "public";
+            } else {
+                shareability = "private";
+            }
+            var eventProperties = {};
+            eventProperties.shareability = shareability;
+         //   console.log("Logging event " + view + " shareability: " + shareability + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent(view, eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeSortEvent() {
+    try{
+        if(amplitudeEnabled) {
+            var orderBy = document.getElementById("defaultOrderBy");
+            var defaultOrderByDirection = document.getElementById("defaultOrderByDirection");
+            var orderByText = orderBy.options[orderBy.selectedIndex].text;
+            var directionText = defaultOrderByDirection.options[defaultOrderByDirection.selectedIndex].text;
+            var sortBy = orderByText + "-" + directionText;
+            var eventProperties = {};
+            eventProperties.sortBy = sortBy;
+         //   console.log("Logging event sort column. sortBy: " + sortBy + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent("sort column", eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeMoveCol(event) {
+    try {
+        if(amplitudeEnabled) {
+            var columnName = "";
+            if ('add column' === event) {
+                var obj = document.getElementById("unselectedColumns");
+                if (obj.selectedIndex > -1) {
+                    columnName = obj.options[obj.selectedIndex].text;
+                }
+            } else if ('remove column' === event) {
+                var obj = document.getElementById("selectedColumns");
+                if (obj.selectedIndex > -1) {
+                    columnName = obj.options[obj.selectedIndex].text;
+                }
+            }
+            if (columnName.length > 0) {
+                var eventProperties = {};
+                eventProperties.columnName = columnName;
+            //    console.log("Logging event " + event + ", columnName: " + columnName + ", eventProperties: " + eventProperties);
+                amplitude.getInstance().logEvent(event, eventProperties);
+            }
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAddFilter() {
+    try {
+        if(amplitudeEnabled) {
+            var columnName = "";
+            var operator = "";
+            var obj = document.getElementById("gridFilterColumn");
+            if (obj.selectedIndex > -1) {
+                columnName = obj.options[obj.selectedIndex].text;
+            }
+            obj = document.getElementById("gridFilterOperator");
+            if (obj.selectedIndex > -1) {
+                operator = obj.options[obj.selectedIndex].text;
+            }
+            if (columnName.length > 0) {
+                if (operator.length > 0) {
+                    var eventProperties = {};
+                    var filterType = columnName + "-" + operator;
+                    eventProperties.filterType = filterType;
+                //    console.log("Logging event add filter " + ", filterType: " + filterType + ", eventProperties: " + eventProperties);
+                    amplitude.getInstance().logEvent('add filter', eventProperties);
+                }
+            }
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeProspectEvent(event){
+    try{
+        if(amplitudeEnabled) {
+            var prospectType = document.getElementById("prospectTypeHidden").value;
+            var eventProperties = {};
+            eventProperties.prospectType = prospectType;
+        //    console.log("Logging event " + event + ", prospectType: " + prospectType + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent(event, eventProperties);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeMoveToLeaseEvent(){
+    try{
+        if(amplitudeEnabled) {
+            var prospectType = document.getElementById("prospectTypeHidden").value;
+            var leaseId;
+            leaseId = jQuery('#searchLeaseForm input:radio:checked').val();
+            if(leaseId != null) {
+                var eventProperties = {};
+                eventProperties.prospectType = prospectType;
+                eventProperties.leaseId = leaseId;
+                //    console.log("Logging event " + event + ", prospectType: " + prospectType + ", eventProperties: " + eventProperties);
+                amplitude.getInstance().logEvent('move prospect into existing lease', eventProperties);
+            }
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAmplitudeAddNewPayment() {
+    try {
+        if (amplitudeEnabled) {
+            var obj = document.getElementById("leaseDetailForm.payment.paymentType");
+            var paymentType = obj.options[obj.selectedIndex].text;
+            var eventProperties = {};
+            eventProperties.paymentType = paymentType;
+          //  console.log("Logging event add new payment" + ", paymentType: " + paymentType + ", eventProperties: " + eventProperties);
+            amplitude.getInstance().logEvent('add new payment', eventProperties);
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}
+
+function logAmplitudeNewCharge(){
+    try {
+        if(amplitudeEnabled) {
+            var comments = document.getElementById("charge.comments").value;
+            var chargeAmount = document.getElementById("charge.editAmountAsString").value;
+            logAmplitudeAddCharge(chargeAmount, comments);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAutoJournal() {
+    try {
+        if(amplitudeEnabled) {
+            var journalDate = document.getElementById("autoJournalEntry.startDateAsString").value;
+            logAmplitudeAutoJournal(journalDate);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logAddAutoCharge() {
+    try {
+        if(amplitudeEnabled) {
+            var amt = document.getElementById("charge.amountAsString").value;
+            var obj = document.getElementById("charge.frequency");
+            var freq = obj.options[obj.selectedIndex].text;
+            logAmplitudeAddAutoCharge(amt, freq);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logPaymentTypes(){
+    try {
+        if(amplitudeEnabled) {
+            var paymentType = [];
+            jQuery.each(jQuery("input[name='entity.paymentRestriction.paymentTypesAllowed']:checked"), function () {
+                paymentType.push(jQuery(this).val());
+            });
+            logAmplitudePmtTypes(paymentType);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function logSetupEpayment() {
+    try {
+        if(amplitudeEnabled) {
+            var obj = document.getElementById("epayInfoID");
+            var payee = obj.options[obj.selectedIndex].text;
+            var amt = document.getElementById("autoPayment.amountAsString").value;
+            var freqObj = document.getElementById("autoPayment.frequency");
+            var freq = freqObj.options[freqObj.selectedIndex].text;
+            logAmplitudeSetupAutoEpay(payee, amt, freq);
+        }
+    } catch(err) { console.log("Amplitude error " + err);}
+}
+
+function amplitudeLogDiscount() {
+    try {
+        if (amplitudeEnabled) {
+            var rVal = jQuery("input[name='refundType']:checked").val();
+            if (rVal === "1" || rVal === "2") {
+                var disOrAdjVal = document.getElementById("refund.editAmountAsString").value;
+                var eventProperties = {};
+                eventProperties.discountOrAdjustmentValue = disOrAdjVal;
+            //    console.log("Logging event add discount or adjustment. discountOrAdjustmentValue: " + disOrAdjVal + ", eventProperties: " + eventProperties);
+                amplitude.getInstance().logEvent("add discount or adjustment", eventProperties);
+            }
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}
+
+function logAmplitudeLoginEvent() {
+    try {
+        if (amplitudeEnabled) {
+            if(!loginEventLogged){
+                amplitude.getInstance().logEvent("login");
+                //  console.log("Logging event " + eventName);
+            }
+        }
+    } catch (err) {
+        console.log("Amplitude error " + err);
+    }
+}

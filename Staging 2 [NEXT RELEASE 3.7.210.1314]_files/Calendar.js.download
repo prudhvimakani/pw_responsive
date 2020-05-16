@@ -1,0 +1,537 @@
+/*****global variables*******/
+
+var pInputMonth;
+var pInputDay;
+var pInputYear;
+var today = new Date();
+var year = javaYear;
+var month = javaMonth;
+var inputDateField;
+var inputDate;
+var defaultDate;
+var vertical;
+var tInputMonth;
+var tInputDay;
+var tInputYear;
+var kCal;
+var defaultDateString = 'mm/dd/yyyy';
+var pkId = "";
+var pkJsMOver = " ";
+var pkJsMOut = " ";
+var pkJsOnClick = " ";
+var foo = true; //debugging var
+
+// Utilities functions
+
+function stopBubble(e) {
+    if(e.stopPropagation) {
+        e.stopPropagation();
+    } else {
+        e.cancelBubble = true;
+    }
+}
+
+function wrtPkDayDtls(pkLabel){
+    var tlabel = pkLabel.toString();
+    document.getElementById('pkDayDtls').innerHTML = tlabel;
+    clickLayer('pkDayDtls', 2, -15);
+}
+
+function killAllCalendars() {
+    // The max number of calendars can exist in one page is 12
+    var num = 13;
+    for(i = 1; i < num; i++) {
+        kCal = "cal"+i;
+        setVisible(false,"cal"+i);
+    }
+}
+
+function parseToDoubleDigit(number) {
+    return (number < 10) ? '0' + number : number;
+}
+
+function parseToSingleDigit(number) {
+    var str = '' + number;
+    return str = str.replace(/^0+/g, '');
+}
+
+function getAllDaysInMonth(month)  {
+    var days;
+    //var year = (month >= javaMonth) ? javaYear : javaYear + 1;
+    if (month==0 || month==2 || month==4 || month==6 || month==7 || month==9 || month==11)  { days=31; }
+    else if (month==3 || month==5 || month==8 || month==10) { days=30; }
+    else if (month==1)  {
+        if (isThisLeapYear(year)) { days=29; }
+        else { days=28; }
+    }
+    return (days);
+}
+
+function isThisLeapYear (Year) {
+    if (((Year % 4)==0) && ((Year % 100)!=0) || ((Year % 400)==0)) { return (true); }
+    else { return (false); }
+}
+
+function parseDate(dateString){
+
+    /****utitility and subfunctions*******/
+    function trim(sString){
+        var re1 = /\s{2,10}/g;  //precompile reg ex's for performance
+        sString = sString.replace(re1, ' ');
+        while(sString.substring(0,1) == ' '){
+            sString = sString.substring(1, sString.length);
+        }
+        while(sString.substring(sString.length-1, sString.length) == ' '){
+            sString = sString.substring(0,sString.length-1);
+        }
+
+        return sString;
+    }
+    /******/
+
+    function delimit(sString){
+        var thisString;
+        var re1 = /,\s/g;
+        var re2 = /([|]|[.]|[,]|[;]|[\s]|[\/])/g; //BUG: ugly, but mozilla has problems with some character class formations
+        thisString = sString.replace(re1, ',');
+        thisString = thisString.replace(re2, '|');
+        thisString = thisString.toLowerCase();
+
+        return thisString;
+    }
+
+    /*****/
+    function convertMonthAbbreviation(inputString){
+        var alphaMonth;
+        var numericMonth;
+        var numericString;
+        var re1 = /^[a-zA-Z]*/;
+        var re2 = /^[a-zA-Z]{3}/;
+        var alphaMonthArray = new Array("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" );
+
+        if(inputString.length < 3) return;
+        if(inputString.match(re1)){
+            alphaMonth = inputString.match(re2);
+            for(i=0;i<alphaMonthArray.length;i++){
+                if(alphaMonth == alphaMonthArray[i]) {
+                    numericMonth = i + 1;
+                    numericString = inputString.replace(re1, numericMonth);
+                    return numericString;
+                }
+            }
+        }
+    }
+    /*****/
+    function matchPattern(sString){
+        var normString = sString;
+        var normStringTwo = sString;
+        var testPattern =  /^(\d{1,2})([|]\d{1,2})([|](\d{2}){1,2})?$/i;//check if input conforms to allowed input patterns
+        var re2 = /^([a-zA-z])/;
+
+        if(normString.match(re2)){
+            normStringTwo = convertMonthAbbreviation(normString);
+        }
+
+        if(normStringTwo.match(testPattern)) {
+            return normStringTwo;
+        }
+
+        return;
+    }
+    /****************Main Function-Accepts initial Inputs*****************************/
+    function parseDateMain(dateString){
+        var inputString;
+        var normString;
+        var normStringTwo;
+
+        inputString = trim(dateString);
+        normString = delimit(inputString);
+        normStringTwo = matchPattern(normString);
+        setDateInputs(normStringTwo);
+
+    }
+    /****Output Function***/
+
+    function setDateInputs(dateString){
+        var re1 = "|";
+
+        if(dateString != null){
+            var dateTokenArray = dateString.split(re1);//tokenize input into array
+            pInputMonth = dateTokenArray[0];
+            pInputDay = dateTokenArray[1];
+            pInputYear = dateTokenArray[2];
+        }else{
+            return;
+        }
+    }
+
+    parseDateMain(dateString);
+}
+
+
+function processMonth(startMonthField,endMonthField) {
+    endMonthField.selectedIndex = startMonthField.selectedIndex;
+}
+
+function process(num,cal) {
+
+    if(num == -1) {
+        if(month == 0) {
+            month = 11;
+            year--;
+            today.setFullYear(year);
+        }
+        else { month--; }
+    }
+    if(num == 1) {
+        if(month == 11) {
+            month = 0;
+            year++;
+            today.setFullYear(year);
+        }
+        else { month++; }
+    }
+    // month set twice for bug #10002
+    today.setMonth(month);
+    today.setMonth(month);
+    writeCalendar(cal);
+}
+
+function returnMonth(thismonth) {
+    monthArray = new Array('JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE','JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER');
+    return monthArray[thismonth];
+}
+
+function setVisible(state,sCal) {
+
+    if(!state) {
+        sCal = kCal;
+    }
+    if(document.getElementById(sCal)) {
+        var divRef = document.getElementById(sCal);
+    } else { return; }
+    if(state) {
+
+        divRef.style.display = "block";
+        divRef.style.top = jQuery(inputDateField).offset().top + 20 + "px";
+        divRef.style.left = jQuery(inputDateField).offset().left + "px";
+
+        // IE7 footer Bug
+        if(isIE){
+            if(document.getElementById('contentWrapper') != null)
+                divRef.style.top = jQuery(inputDateField).offset().top + 20 - document.getElementById('contentWrapper').scrollTop;
+            divRef.style.left = jQuery(inputDateField).offset().left + 3;
+        }
+
+        // FF3  Bug
+        if(typeof managementDateRange != 'undefined' && managementDateRange){
+            if(isFF3 && inputDateField.name.indexOf('summary') > -1){
+                divRef.style.top = jQuery(inputDateField).offset().top + 20;
+                divRef.style.left = jQuery(inputDateField).offset().left;
+            }
+        }
+
+        if(typeof bankingDateRange != 'undefined' && bankingDateRange){
+            if(isFF3){
+                divRef.style.top = jQuery(inputDateField).offset().top + 18;
+                divRef.style.left = jQuery('#bankLedgerView\\.dateRangeFunction').offset().left + jQuery(inputDateField).offset().left+156;
+            }
+        }
+
+        if(typeof moneyOutDateRange != 'undefined' && moneyOutDateRange){
+            if(isFF3){
+                divRef.style.top = jQuery(inputDateField).offset().top + 18;
+                divRef.style.left = jQuery('#vendorTabView\\.dateRangeFunction') + jQuery(inputDateField).offset().left+157;
+            }
+        }
+
+        if(typeof reportDateRange != 'undefined' && reportDateRange){
+            if(isFF3){
+                divRef.style.top = jQuery(inputDateField).offset().top + 18;
+                if(inputDateField.name.indexOf('filter') > -1){
+                    var selectId = inputDateField.name.substring(0, inputDateField.name.indexOf('.')) + '.operator';
+                    divRef.style.left = jQuery("#"+selectId).offset().left + jQuery(inputDateField).offset().left+159;
+                } else if(document.getElementById('#entity\\.dateRangeFunction') != null) {
+                    divRef.style.left = jQuery('#entity\\.dateRangeFunction').offset().left + jQuery(inputDateField).offset().left+156;
+                }
+            } else if(isIE){
+                divRef.style.top = jQuery(inputDateField).offset().top + 22 - document.getElementById('contentWrapper').scrollTop;
+                divRef.style.left = jQuery(inputDateField).offset().left;
+            }
+        }
+
+
+
+        //alert(ylib_getPageX(inputDateField)+","+ylib_getPageY(inputDateField));
+    } else {
+        divRef.style.display = "none";
+        
+    }
+}
+
+function closeCalendar(cCal) {
+    kCal = cCal;
+    today = new Date();
+    year = javaYear;
+    month = javaMonth;
+    setVisible(false);
+    //showAllSelectsFromIE();/* HACK rodrigo */
+}
+
+function setField(userDateField, userSiblingDate, userDate, userVertical) {
+    // First off, lets kill all calendars if any.
+    killAllCalendars();
+    inputDateField = userDateField;
+    inputDate = userDate;
+    vertical = userVertical;
+
+    var dToday = today;
+    defaultDate = dToday.getMonth()+1+'/'+dToday.getDate()+'/'+javaYear;
+
+    if (inputDate == defaultDateString) {
+        if (userSiblingDate == defaultDateString) {
+            inputDate = defaultDate;
+        } else {
+            inputDate = userSiblingDate;
+        }
+    } else if (inputDate.length < 1) {
+        inputDate = defaultDate;
+    }
+
+    try {
+        parseDate(inputDate);
+    } catch(e) {
+        parseDate(defaultDate);
+    }
+
+    if (parseToSingleDigit(pInputMonth) > 12) {
+        parseDate(defaultDate);
+    }
+
+    tInputMonth =  parseToSingleDigit(pInputMonth);
+    tInputDay = parseToSingleDigit(pInputDay);
+    tInputYear = ((pInputYear.length <= 2) ? '20' + pInputYear : pInputYear);
+
+    month = tInputMonth - 1;
+    today.setMonth(month);
+    year = tInputYear;
+    today.setFullYear(year);
+}
+
+function updateNewDateValue(inDay) {
+    var thisDay = inDay;
+    var thisMonth = month + 1;
+    var thisYear = year;
+    var thisYearString = '' + thisYear;
+    inputDateField.focus();
+    var newValue = parseToDoubleDigit(thisMonth) + '/' + parseToDoubleDigit(thisDay) + '/' + thisYear;
+    var flag = newValue != inputDateField.value;
+    if (flag) {
+        inputDateField.value = newValue;
+        inputDateField.hasChanged = true;
+    }
+    return flag;
+}
+function returnDate(inDay,cal) {
+    updateNewDateValue(inDay);
+    // focus and blur so onchange() gets called
+    inputDateField.blur();
+    closeCalendar(cal);
+}
+
+function writeCalendar(cal) {
+    //alert(vertical);
+    cellHeight = '18';
+    blankColumn = "<td height=" + cellHeight + " class='clickableDays'>&nbsp;</td>"
+    tableOutput = "<table cellpadding='0' cellspacing='0' border='0' width='150'><tr><td colspan='7'><img src='"+staticServerPath +"../images/s.gif' width='1' height='1' border='0'></td></tr><tr><td align='center' bgcolor='#EFEFEF' class='weekdays'>S</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>M</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>T</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>W</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>T</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>F</td><td align='center' bgcolor='#EFEFEF' class='weekdays'>S</td></tr><tr align='right'>"
+
+    var days = getAllDaysInMonth(month);
+    var firstOfMonth = new Date (year, month, 1);
+    var startingPos  = firstOfMonth.getDay();
+    days += startingPos;
+    var columnCount = 0;
+
+    for (i = 0; i < startingPos; i++) {
+        tableOutput += blankColumn;
+        columnCount++;
+    }
+
+    var currentDay = 0;
+    for (i = startingPos; i < days; i++) {
+        currentDay = i-startingPos+1;
+        var pStyle = " ";
+        var pStyleCode = " ";
+        var sltdDt = " ";
+        var sltdDtA= " ";
+
+        var pkMonth = parseToDoubleDigit(month + 1); //modify date segments for peak date id's
+        var pkCurrentDay;
+        pkCurrentDay = parseToDoubleDigit(currentDay);
+        year = "" + year;  //javascript internal bug; force type to year
+        pkYear = year.substring(2,4);
+        var pkId = " ";
+
+
+
+        pkId = "pk" + pkMonth  + pkCurrentDay + pkYear;
+        pkJsMOver = " ";
+        pkJsMOut = " ";
+        pkJsOnClick = " ";
+
+        if(vertical == "flights"){ // Render peak days for AIR only
+
+            // Private function to pop peak day bubble
+            function checkPkDays(pkId){
+                var label = " ";
+                var showLabel
+                for (var i in peakDays){
+                    label = peakDays[i];
+
+                    if(pkId == i){
+
+                        pkJsMOver = " onmouseover='wrtPkDayDtls(\"" + label + "\");' ";
+                        pkJsMOut =  " onmouseout='javascript:hideLayer(\"pkDayDtls\");' ";
+                        pkJsOnClick = " onclick='javascript:hideLayer(\"pkDayDtls\");' "
+                        pStyleCode = " pkD "
+                    }
+                }
+            }
+
+
+            checkPkDays(pkId);
+        }
+
+        if(month + 1 == tInputMonth && (currentDay == tInputDay)) { sltdDt = "style=\"border:1px solid #9CADBD; background-color:#FFEF9C;\""
+            sltdDtA="style=\"background-color:#FFEF9C;\""
+        }
+
+        var verticalDate = javaDate;
+
+        var nonClickableDayString = "<td height=" + cellHeight + " align='center' " + pkJsMOver + pkJsMOut + pkJsOnClick + " class='clickableDays " +  pStyleCode +  "' " + " id='" + pkId + "' " + sltdDt + "><a href='javascript:returnDate(" + currentDay + ",\"" + cal + "\");' class='clickableDays " + pStyleCode + "' " + " id=' " + pkId   + "' " + sltdDtA + ">" + currentDay + "</a></td>";//"<td height=" + cellHeight + " align='center' " + pkJsMOver + pkJsMOut + pkJsOnClick + " onmouseout='javascript:hideLayer(\"pkDayDtls\");' class='nonclickableDays " + pStyleCode + "' " + ">" + currentDay + "</td>";
+
+        var clickableDayString = "<td height=" + cellHeight + " align='center' " + pkJsMOver + pkJsMOut + pkJsOnClick + " class='clickableDays " +  pStyleCode +  "' " + " id='" + pkId + "' " + sltdDt + "><a href='javascript:returnDate(" + currentDay + ",\"" + cal + "\");' class='clickableDays " + pStyleCode + "' " + " id=' " + pkId   + "' " + sltdDtA + ">" + currentDay + "</a></td>"
+
+        //alert (nonClickableDayString);
+        //alert(clickableDayString);
+        //For Past Purchase vertical we have to show the previous/past date, the below check is done for that.
+        /*
+                if(vertical != 'pastpurchase') {
+                    if (month <= javaMonth && year == javaYear) {
+                        if (month == javaMonth && currentDay >= verticalDate) {
+                            tableOutput += clickableDayString;
+                        } else {
+                            tableOutput += nonClickableDayString;
+                        }
+                    } else if (year >= javaLimitYear) {
+                        if ((month > javaLimitMonth) || (month == javaLimitMonth && currentDay >= javaLimitDate) || (year > javaLimitYear)){
+                            tableOutput += nonClickableDayString;
+                        } else {
+                            tableOutput += clickableDayString;
+                        }
+                    } else if (year < javaYear) {
+                        tableOutput += nonClickableDayString;
+                    } else {
+                        tableOutput += clickableDayString;
+                    }
+                } else {
+        */
+        tableOutput += clickableDayString;
+        /*
+                }
+        */
+
+        columnCount++;
+        if (columnCount % 7 == 0) {
+            tableOutput += "</tr><tr align='center'>";
+        }
+    }
+
+    for (i=days; i<42; i++)  {
+        tableOutput += blankColumn;
+        columnCount++;
+
+        if (columnCount % 7 == 0) {
+            tableOutput += "</tr>";
+            if (i<41) {
+                tableOutput += "<tr align='center'>";
+            }
+        }
+    }
+
+    var leftarrow;
+    var rightarrow;
+
+
+    /*
+        if(vertical == 'pastpurchase') {
+            //Show left arrow of the calendar as the customer can go and check any past dates for past purchase vertical
+    */
+    leftarrow="<a href='javascript:process(-1,\"" + cal + "\")'><img src='"+staticServerPath +"../images/left.gif' width='11' height='17' border='0'></a>"
+    /*
+        }
+        else {
+            if(month==javaMonth && year==javaYear) leftarrow="<img src='"+staticServerPath +"../images/spacer.gif' width='11' height='17' border='0'>"
+            else leftarrow="<a href='javascript:process(-1,\"" + cal + "\")'><img src='"+staticServerPath +"../images/left.gif' width='11' height='17' border='0'></a>"
+
+        }
+
+        //Show right arrow of the calendar as the customer can go and check any future dates for past purchase vertical
+        if(vertical == 'pastpurchase') {
+    */
+    rightarrow="<a href='javascript:process(1,\"" + cal + "\")'><img src='"+staticServerPath +"../images/right.gif' width='11' height='17' border='0'></a>"
+    /*
+        }
+        else {
+            if((month==javaMonth-1) && (year==javaYear+1)) rightarrow="<img src='"+staticServerPath +"../images/spacer.gif' width='11' height='17' border='0'>"
+            else rightarrow="<a href='javascript:process(1,\"" + cal + "\")'><img src='"+staticServerPath +"../images/right.gif' width='11' height='17' border='0'></a>"
+        }
+    */
+
+
+    tableOutput += "</table>";
+    monthOutput = "<table width='154' cellspacing='0' cellpadding='0' border='0' bgcolor='#FFFFFF'><tr><td bgcolor='#333333' colspan='5'></td></tr><tr><td bgcolor='#333333'><img src='"+staticServerPath +"../images/spacer.gif' width='1' height='1' border='0'></td><td bgcolor='#FFFFFF'><img src='"+staticServerPath +"../images/spacer.gif' width='1' height='1' border='0'></td><td><table cellpadding='0' cellspacing='0' border='0' width='150' bgcolor='#9CADBD'><tr><td bgcolor='#9CADBD' height='15' valign='top'>" + leftarrow + "</td><td align='center' valign='middle' class='months' bgcolor='#9CADBD'>" + returnMonth(month) + " " + year + "</td><td align='right' bgcolor='#9CADBD' valign='top'>" + rightarrow + "</td></tr></table>";
+
+
+    var offPeakImage = "";
+    var peakImage = "";
+    disclaimerImage = ((month==0 || month==4 || month==6 || month==7 || month==8 || month==10 || month==11) ? peakImage : offPeakImage);
+    if(vertical == 'hotels') { disclaimerImage = "<img src='"+staticServerPath +"../images/hotelDisclaim.gif' width='130' height='38' border='0'>"; }
+    else if(vertical == 'cars') { disclaimerImage = "<img src='"+staticServerPath +"../images/carDisclaim.gif' width='130' height='38' border='0'>"; }
+    else if(vertical == 'pastpurchase') { disclaimerImage = ""; }
+    disclaimer = "<table width='150' cellspacing='0' cellpadding='0' border='0'><tr><td align='center' valign='bottom'>"+disclaimerImage+"</td><td align='right' valign='bottom'><a href='javascript:closeCalendar(\"" + cal + "\")'><img src='"+staticServerPath +"../images/close.gif' width='16' height='12' border='0'></a><br /></td></tr></table></td><td bgcolor='#FFFFFF'><img src='"+staticServerPath +"../images/spacer.gif' width='1' height='1' border='0'></td><td bgcolor='#333333'><img src='"+staticServerPath +"../images/spacer.gif' width='1' height='1' border='0'></td></tr><tr><td bgcolor='#333333' colspan='5'></td></tr></table>";
+    tableOutput = (monthOutput + tableOutput) + disclaimer;
+
+    document.getElementById(cal).innerHTML=tableOutput;
+    setVisible(true,cal);
+
+}
+
+// datetime parsing and formatting routimes. modify them if you wish other datetime format
+function str2dt (str_datetime) {
+    var mm = new Number(str_datetime.substring(0, str_datetime.indexOf('/')));
+    var rest = str_datetime.substring(str_datetime.indexOf('/') + 1, str_datetime.length);
+    var dd = rest.substring(0, rest.indexOf('/'));
+    var yy = rest.substring(rest.indexOf('/') + 1, rest.length);
+    return (new Date (yy, mm - 1, dd));
+}
+
+function dt2dtstr (dt_datetime) {
+    var day = dt_datetime.getDate();
+
+    if( day < 10 )
+        day = "0" + day;
+
+    var month = dt_datetime.getMonth() + 1;
+
+    if( month < 10 )
+        month = "0" + month;
+    
+    return (new String ((month)+"/"+day+"/"+dt_datetime.getFullYear()+" "));
+}
+
+function dt2tmstr (dt_datetime) {
+    return (new String (""));
+}
+
+
+

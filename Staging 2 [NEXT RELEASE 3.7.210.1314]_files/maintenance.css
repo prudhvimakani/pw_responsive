@@ -1,0 +1,431 @@
+.summaryPanel {
+   background: #EFE6A9;
+   _float:none;
+}
+
+.summaryPanelWithJumpPanel {
+   background: #EFE6A9;
+}
+
+/**
+ *  Override table.list
+ **/
+table.list caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+table.expandedList caption {
+    text-align: left;
+    background: #EFE6A9;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+table.list caption {
+    text-align: left;
+    background: #EFE6A9;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+table.list th.date {
+    text-align: left;
+}
+table.list td.date {
+    text-align: left;
+}
+/**
+ *  Override table.info
+ **/
+table.info caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+/**
+ *  Override table.info
+ **/
+table.info caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+/**
+ *  Override table.list
+ **/
+table.list caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+/**
+ *  Override table.edit
+ **/
+table.edit caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    font-weight: bold;
+}
+
+.maintenanceEdit {
+    border: 2px solid #DCCA79;
+    background-color: #EFE6A9;
+}
+
+.maintenanceEdit TH {
+    text-align: left;
+}
+
+TABLE.editRequestedBy {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #000000;
+    background-color: #FFFFFF;
+    font-size: 12px;
+    text-align: left;
+    border-left: 1px solid #B8B69A;
+    border-right: 1px solid #B8B69A;
+    border-bottom: 1px solid #B8B69A;
+}
+
+TABLE.editRequestedBy TD {
+    background-color: #DEDBB8;
+}
+
+TABLE.editRequestedByInner {
+    background-color: #DEDBB8;
+}
+
+TABLE.editRequestedByInner TD.tempColumn {
+    background-color: #E7E7E7;
+}
+
+TABLE.editRequestedByInner TD.saveAsColumn {
+    background-color: #DEDBB8;
+}
+
+TABLE.editRequestedByInner TH {
+    text-align: right;
+    background-color: #DEDBB8;
+}
+
+TABLE.editRequestedByInner TH.tempColumn {
+    background-color: #CCCCCC;
+    text-align: center;
+}
+
+TABLE.editRequestedByInner TH.saveAsColumn {
+    background-color: #B8B69A;
+    text-align: center;
+}
+
+TABLE.editRequestedBy DIV.dashed {
+    height: 1px;
+    font-size: 0px;
+}
+
+/**************************************************************************************
+* DIV.edit
+*
+* To be used in tables in edit pages with pairs of label and field. The use of
+* <th> tags as a field cell as opposed to <td class="label"> is optional.
+*
+**************************************************************************************/
+DIV.edit {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #000000;
+    background-color: #EFE6A9;;
+    font-size: 12px;
+    text-align: left;
+    padding: 5px;
+    border-left: solid 2px #DCCA79;
+    border-top: solid 2px #DCCA79;
+    border-right: solid 2px #DCCA79;
+    border-bottom: solid 2px #DCCA79;
+    width: 96.5%;
+}
+
+
+/**************************************************************************************
+ * TABLE.infoRejected
+ *
+ * To be used in tables containig information in pairs of label and value.
+ *
+ *
+ *************************************************************************************
+*/
+TABLE.infoRejected {
+    background: url(../../images/rejected-bg.gif);
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #000000;
+    background-color: #EFE6A9;;
+    font-size: 12px;
+    text-align: left;
+    padding-left: 1px;
+    border: solid 2px #DCCA79;
+}
+
+
+TABLE.infoRejected TH {
+    font-weight: bold;
+    text-align: left;
+}
+
+TABLE.infoRejected TD {
+    text-align: left;
+}
+
+#maintenanceHomeSummary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color: #666666;
+    background-color: #EFE6A9;
+    font-size: 12px;
+    width : 98%;
+    text-align: left;
+    padding-left: 24px;
+    border-left: solid 2px #DCCA79;
+    border-top: solid 2px #DCCA79;
+    border-right: solid 2px #DCCA79;
+    border-bottom: solid 2px #DCCA79;
+}
+
+a.maintenanceHomeSummary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #666666;
+    font-size: 12px;
+}
+
+a:hover.maintenanceHomeSummary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    color: #6699CC;
+    font-size: 12px;
+}
+
+/**
+ *  Popup Headers
+ **/
+div.popup h2 {
+    /* Bottom Line */
+    /*border-bottom: 1px solid #D2CD87;*/
+}
+
+#editBillFormContainer h2 {
+    /* Icon */
+    background: transparent url(../../images/money-out.gif) no-repeat 0% 50%;
+
+    /* Formula = (Container Width - Padding left - 2%) */
+    width: 628px;
+}
+
+#editTimecardContainer h2 {
+    /* Icon */
+    background: transparent url(../../images/icon_clock.gif) no-repeat 0% 50%;
+    padding-left: 40px;
+}
+
+#editFaxContainer h2 {
+    /* Icon */
+    background: transparent url(../../images/work_order_icon.gif) no-repeat 0% 50%;
+
+    /* Formula = (Container Width - Padding left - 2%) */
+    width: 400px;
+}
+
+#editBillFormContainer caption {
+    background-image: none;
+}
+
+#viewVendorFormContainer h2 {
+    /* Icon */
+    background: transparent url(../../images/vendor_icon.gif) no-repeat;
+
+    /* Formula = (Container Width - Padding left - 2%) */
+    width: 678px;
+}
+
+/**
+ *  Override div.popup
+ **/
+div.popup {
+    background-color: #EFE6A9;
+    border: 2px solid #9C97AF;
+    padding: 5px;
+}
+
+#addNewVendorTypeFormContainer {
+    background-color: #E8EFF6;
+    width : 350px;
+    text-align: left;
+    padding: 4px;
+    margin: 4px;
+    border-left: solid 1px #000000;
+    border-top: solid 1px #000000;
+    border-right: solid 1px #000000;
+    border-bottom: solid 1px #000000;
+}
+
+table.splitTable {
+    border-collapse: separate;
+    border-spacing: 0px;
+    empty-cells: show;
+    border: 2px solid #E3DEB8;
+    background-color: #F3F3EC;
+    padding: 0px;
+    width: 100%;
+}
+
+table.splitTable tr {
+    text-align: left;
+}
+
+table.splitTable td {
+    border-top: solid 1px #E3DEB8;
+    margin: 0px;
+}
+
+div.pageSection table.splitTable {
+    border: transparent solid 0px;
+    width: 100%;
+}
+
+table.splitTable caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+#billPaymentTable caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+#billRecoveriesTable caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+
+#billAttachmentsTable caption {
+    text-align: left;
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+    font-weight: bold;
+}
+#folderNotesTable caption{
+    background-image: none;
+}
+
+#folderDocumentsTable caption{
+    background-image: none;
+}
+
+#assetsTable caption {
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+}
+
+
+/*Grid View */
+#addFilter caption{
+    background: #EFE6A9;    
+}
+
+.zoomTable{
+    width:100%;
+    _width:98%;
+    border-right: 1px solid #EFE6A9;
+    border-bottom: 1px solid #EFE6A9;
+    background-color: #FBF8E6;
+}
+
+.zoomItem{
+    width:100%;
+    border-left: 1px solid #EFE6A9;
+    border-top: 2px solid #EFE6A9;
+    height:70px;
+}
+/*ENd Grid View */
+
+#workOrderApprovalTable caption {
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+}
+#workOrderApprovalTable tbody {
+    display: table-row-group;
+}
+#workOrderApprovalTable thead {
+    display: table-header-group;
+}
+#workOrderApprovalTable tfoot {
+    display: table-footer-group;
+}
+
+#billPaymentTable caption {
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+}
+#billPaymentTable tbody {
+    display: table-row-group;
+}
+#billPaymentTable thead {
+    display: table-header-group;
+}
+#billPaymentTable tfoot {
+    display: table-footer-group;
+}
+
+#billRecoveriesTable caption {
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+}
+#billRecoveriesTable tbody {
+    display: table-row-group;
+}
+#billRecoveriesTable thead {
+    display: table-header-group;
+}
+#billRecoveriesTable tfoot {
+    display: table-footer-group;
+}
+
+#billAttachmentsTable caption {
+    background: #EFE6A9 url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+}
+#billAttachmentsTable tbody {
+    display: table-row-group;
+}
+#billAttachmentsTable thead {
+    display: table-header-group;
+}
+#billAttachmentsTable tfoot {
+    display: table-footer-group;
+}
+#billSplitsTable caption {
+    background: #EFE6A9  url(../../images/minus.jpg) no-repeat 2px 5px;
+    padding-left: 18px;
+}
+#billSplitsTable tbody {
+    display: table-row-group;
+}
+#billSplitsTable thead {
+    display: table-header-group;
+}
+#billSplitsTable tfoot {
+    display: table-footer-group;
+}
